@@ -1,0 +1,35 @@
+/* Profile Management Page Styles */
+select {
+  display: inline-block;
+  width: 100%;
+  margin: 0;
+  padding: 10px 5px;
+  border: solid 2px var(--main-color);
+  border-radius: 5px;
+  background-color: var(--bg-color);
+  box-shadow: 4px 4px 0 var(--main-color);
+  box-sizing: border-box;
+  font-weight: 600;
+  color: var(--font-color);
+}
+
+select:focus {
+  outline: none;
+  border: solid 2px var(--input-focus);
+}
+
+/* Adjust input and select spacing */
+input, select {
+  margin-bottom: 10px;
+}
+
+/* Form container adjustments */
+.auth-container {
+  width: 300px; /* Slightly wider for better readability */
+}
+
+/* Back to Home link */
+p {
+  margin-top: 10px;
+  text-align: center;
+}

@@ -1,0 +1,130 @@
+:root {
+  --input-focus: #2d8cf0;
+  --font-color: #323232;
+  --font-color-sub: #666;
+  --bg-color: beige;
+  --highlight-color: lightblue;
+  --main-color: black;
+  --white: #eeeeee;
+  --auth-container-size: 250px;
+}
+
+/* Reset html and body to not stretch to full height */
+html, body {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center vertically */
+  margin: 0;
+  padding: 0;
+  height: auto; /* Remove fixed height */
+  min-height: 100vh; /* Ensure it covers at least the full viewport height */
+  width: 100vw;
+  font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+  padding: 0;
+  margin: 0;
+  font-weight: 600;
+  color: var(--font-color);
+}
+
+h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--font-color-sub);
+}
+
+.auth-container {
+  background-color: var(--highlight-color);
+  width: var(--auth-container-size);
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  padding: 1rem;
+  border: solid 2px var(--main-color);
+  border-radius: 5px;
+  box-shadow: 4px 4px 0 var(--main-color);
+  margin: 0 auto; /* Center horizontally */
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: inherit;
+  gap: 15px;
+  margin: 0;
+  padding: 0.8rem;
+  box-sizing: border-box;
+}
+
+input {
+  display: inline-block;
+  width: 100%;
+  margin: 0;
+  padding: 10px 5px;
+  border: solid 2px var(--main-color);
+  border-radius: 5px;
+  background-color: var(--bg-color);
+  box-shadow: 4px 4px 0 var(--main-color);
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border: solid 2px var(--input-focus);
+}
+
+input::placeholder {
+  padding-left: 5px;
+  font-weight: 600;
+}
+
+button {
+  position: relative;
+  overflow: hidden;
+  color: var(--bg-color);
+  margin: 0;
+  padding: 5px 0;
+  border: solid 2px var(--bg-color);
+  border-radius: 5px;
+  background-color: var(--font-color);
+  box-shadow: 4px 4px 0 var(--bg-color);
+  font-weight: 600;
+  padding: 10px 10px;
+  cursor: pointer;
+  width: 100%;
+}
+
+button::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: translateX(-100%) rotate(45deg);
+  transition: transform 1s ease;
+}
+
+button:hover::before {
+  transform: translateX(100%) rotate(45deg);
+}
+
+p {
+  font-size: 0.8rem;
+  color: var(--font-color-sub);
+  text-align: center;
+}
+
+a {
+  color: var(--input-focus);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

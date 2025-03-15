@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Profile Management</title>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Profile Management</h1>
+    <h2>Update your personal information</h2>
+    <form id="profile-form">
+      <!-- Name and Surname -->
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="text" name="surname" placeholder="Surname" required>
+
+      <!-- Activity Type Dropdown -->
+      <label for="activity-type">Preferred Activity:</label>
+      <select name="activity-type" id="activity-type" required>
+        <option value="" disabled selected>Select your preferred activity</option>
+        <option value="cycling">Cycling</option>
+        <option value="hiking">Hiking</option>
+        <option value="running">Running</option>
+        <option value="other">Other</option>
+      </select>
+
+      <!-- Date of Birth -->
+      <input type="date" name="dob" placeholder="Date of Birth" required>
+
+      <!-- Location -->
+      <input type="text" name="city" placeholder="City" required>
+      <input type="text" name="province" placeholder="Province" required>
+      <input type="text" name="country" placeholder="Country" required>
+
+      <!-- Submit Button -->
+      <button type="submit">Update Profile</button>
+    </form>
+    <p><a href="home.html">Back to Home</a></p>
+  </div>
+</body>
+</html>

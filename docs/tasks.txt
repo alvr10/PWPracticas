@@ -1,0 +1,87 @@
+Task Table
+Task	Status	Details
+
+
+Authentication		
+- Registration Form	Completed	Created register.html with fields for username, email, password, etc.
+- Login Form	Completed	Created login.html with email and password fields.
+- Email Validation (Optional)	Pending	Implement email validation with a link sent to the user.
+
+
+User Profile Management		
+- Profile Update Form	Pending	Create a form to update name, surname, activity type, location, etc.
+
+
+Activity Publishing		
+- Create Activity Form	Pending	Form to publish activities with fields for type, title, route, images, etc.
+- AJAX User Search for Companions	Pending	Implement AJAX search to add friends as activity companions.
+
+
+User Search		
+- Search Users by Name/Surname	Pending	Create a search bar to find users by name or surname.
+- Friend Management	Pending	Add/remove friends and view limited profile info for non-friends.
+
+
+Activity Feed		
+- Display Friend Activities	Pending	Show activities of friends in a paginated feed (10 per page).
+- AJAX Pagination (Optional)	Pending	Implement AJAX-based pagination for the activity feed.
+
+
+Activity Details		
+- Display Activity Information	Pending	Show activity type, title, route map, images, companions, and applause.
+- Applause Feature	Pending	Allow users to "applaud" activities and display the count.
+
+
+Home Page		
+- Home Page Design	Pending	Create a home page with navigation to login, register, and other features.
+
+
+Backend Development		
+- Database Design	Pending	Define tables for users, activities, friends, applause, etc.
+- API Endpoints	Pending	Create RESTful APIs for registration, login, activity posting, etc.
+- Email Validation Logic	Pending	Implement backend logic for email validation (if required).
+
+
+Testing		
+- Unit Testing	Pending	Write tests for backend APIs and frontend functionality.
+- Integration Testing	Pending	Test the interaction between frontend and backend.
+
+
+Deployment		
+- Hosting Setup	Pending	Deploy the application to a hosting platform (e.g., Heroku, AWS, etc.).
+- Domain Configuration	Pending	Configure a custom domain for the application.
+
+
+Next Steps
+
+    Frontend Development:
+
+        Create the home page (index.html) with navigation links to login, register, and other features.
+
+        Design the profile management page (profile.html) for updating user details.
+
+        Build the activity publishing form (publish-activity.html).
+
+        Implement the user search and friend management interface (search-users.html).
+
+        Develop the activity feed and details pages (activity-feed.html, activity-details.html).
+
+    Backend Development:
+
+        Design the database schema (e.g., using SQL or NoSQL).
+
+        Implement API endpoints for registration, login, activity posting, etc.
+
+        Add logic for email validation (if required).
+
+    Testing:
+
+        Write unit tests for backend APIs.
+
+        Perform integration testing to ensure frontend and backend work seamlessly.
+
+    Deployment:
+
+        Choose a hosting platform and deploy the application.
+
+        Configure a custom domain if needed.
