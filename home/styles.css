@@ -1,0 +1,252 @@
+:root {
+  --primary-color: #2d8cf0;
+  --secondary-color: #4CAF50;
+  --font-color: #323232;
+  --font-color-sub: #666;
+  --bg-color: #f8f9fa;
+  --highlight-color: #e3f2fd;
+  --main-color: #212121;
+  --white: #ffffff;
+  --shadow: 4px 4px 0 var(--main-color);
+  --border: solid 2px var(--main-color);
+  --container-width: 1200px;
+}
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: var(--font-color);
+  background-color: var(--bg-color);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header styles */
+.main-header {
+  background-color: var(--white);
+  border-bottom: var(--border);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.main-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 20px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+}
+
+.main-nav ul {
+  display: flex;
+  list-style: none;
+  gap: 20px;
+  align-items: center;
+}
+
+.main-nav a {
+  text-decoration: none;
+  color: var(--font-color);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.main-nav a:hover {
+  color: var(--primary-color);
+  background-color: var(--highlight-color);
+}
+
+/* Button styles */
+.button {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: var(--border);
+  box-shadow: var(--shadow);
+}
+
+.button.primary {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+.button.primary:hover {
+  background-color: #1a73e8;
+  transform: translateY(-2px);
+}
+
+.button.secondary {
+  background-color: var(--white);
+  color: var(--primary-color);
+}
+
+.button.secondary:hover {
+  background-color: var(--highlight-color);
+  transform: translateY(-2px);
+}
+
+/* Hero section */
+.hero {
+  background-color: var(--highlight-color);
+  padding: 4rem 0;
+  border-bottom: var(--border);
+}
+
+.hero .container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.hero-content {
+  flex: 1;
+}
+
+.hero-image {
+  flex: 1;
+}
+
+.hero-image img {
+  width: 100%;
+  border-radius: 8px;
+  border: var(--border);
+  box-shadow: var(--shadow);
+}
+
+.hero h2 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--main-color);
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--font-color-sub);
+  margin-bottom: 2rem;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Features section */
+.features {
+  padding: 4rem 0;
+}
+
+.features h3 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 3rem;
+  color: var(--main-color);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background-color: var(--white);
+  padding: 2rem;
+  border-radius: 8px;
+  border: var(--border);
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.feature-card h4 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+/* Footer */
+.main-footer {
+  background-color: var(--main-color);
+  color: var(--white);
+  padding: 2rem 0;
+  border-top: var(--border);
+}
+
+.main-footer .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-nav ul {
+  display: flex;
+  list-style: none;
+  gap: 20px;
+}
+
+.footer-nav a {
+  color: var(--white);
+  text-decoration: none;
+}
+
+.footer-nav a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero .container {
+    flex-direction: column;
+  }
+  
+  .main-nav ul {
+    gap: 10px;
+  }
+  
+  .hero h2 {
+    font-size: 2rem;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+  }
+}
