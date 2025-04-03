@@ -1,18 +1,18 @@
+/* styles.css */
 :root {
-  --primary-color: #2d8cf0;
-  --secondary-color: #4CAF50;
-  --font-color: #323232;
-  --font-color-sub: #666;
-  --bg-color: #f8f9fa;
-  --highlight-color: #e3f2fd;
-  --main-color: #212121;
-  --white: #ffffff;
+  --primary-color: #FF6B6B; /* Rojo motivacional */
+  --secondary-color: #4ECDC4; /* Verde/azul fresco */
+  --font-color: #2F2F2F;
+  --bg-color: #F7FFF7;
+  --highlight-color: #FFE66D;
+  --main-color: #292F36;
+  --white: #FFFFFF;
   --shadow: 4px 4px 0 var(--main-color);
   --border: solid 2px var(--main-color);
   --container-width: 1200px;
 }
 
-/* Reset and base styles */
+/* Reset y estilos base */
 * {
   margin: 0;
   padding: 0;
@@ -20,7 +20,7 @@
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   line-height: 1.6;
   color: var(--font-color);
   background-color: var(--bg-color);
@@ -33,7 +33,7 @@ body {
   padding: 0 20px;
 }
 
-/* Header styles */
+/* Header */
 .main-header {
   background-color: var(--white);
   border-bottom: var(--border);
@@ -41,13 +41,6 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-}
-
-.main-header .container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 20px;
 }
 
 .logo {
@@ -64,7 +57,6 @@ body {
   display: flex;
   list-style: none;
   gap: 20px;
-  align-items: center;
 }
 
 .main-nav a {
@@ -78,10 +70,9 @@ body {
 
 .main-nav a:hover {
   color: var(--primary-color);
-  background-color: var(--highlight-color);
 }
 
-/* Button styles */
+/* Botones */
 .button {
   display: inline-block;
   padding: 0.8rem 1.5rem;
@@ -100,53 +91,18 @@ body {
   color: var(--white);
 }
 
-.button.primary:hover {
-  background-color: #1a73e8;
-  transform: translateY(-2px);
-}
-
 .button.secondary {
   background-color: var(--white);
   color: var(--primary-color);
 }
 
-.button.secondary:hover {
-  background-color: var(--highlight-color);
-  transform: translateY(-2px);
-}
-
-/* Hero section with CSS-only parallax */
+/* Hero Section */
 .hero {
   position: relative;
   height: 100vh;
   min-height: 600px;
-  overflow: hidden;
   display: flex;
   align-items: center;
-  border-bottom: var(--border);
-  /* Creates the parallax scrolling effect */
-  background-attachment: fixed;
-}
-
-.hero-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('https://images.unsplash.com/photo-1543351611-58f69d7c1781?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: -1;
-  /* This creates the parallax effect */
-  background-attachment: fixed;
-}
-
-.hero .container {
-  position: relative;
-  z-index: 1;
-  width: 100%;
 }
 
 .hero-content {
@@ -160,303 +116,187 @@ body {
   backdrop-filter: blur(2px);
 }
 
-/* Rest of your existing hero styles... */
 .hero h2 {
-  font-size: 3.5rem;
+  font-size: 3rem;
   margin-bottom: 1.5rem;
   color: var(--primary-color);
 }
 
 .subtitle {
-  font-size: 1.4rem;
-  color: var(--font-color);
-  margin-bottom: 2.5rem;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
 }
 
-@media (max-width: 768px) {
-  /* Disable parallax on mobile for better performance */
-  .hero,
-  .hero-background {
-    background-attachment: scroll;
-  }
-  
-  .hero {
-    min-height: 500px;
-    text-align: center;
-  }
-  
-  .hero-content {
-    margin: 0 auto;
-    padding: 1.5rem;
-    -webkit-backdrop-filter: none; /* Remove blur on mobile */
-    backdrop-filter: none; /* Remove blur on mobile */
-  }
-  
-  .hero h2 {
-    font-size: 2.5rem;
-  }
-  
-  .subtitle {
-    font-size: 1.1rem;
-  }
+/* Secciones de contenido */
+.content-section {
+  padding: 8rem 0;
+  position: relative;
+  z-index: 2;
 }
 
-@media (max-width: 480px) {
-  .hero h2 {
-    font-size: 2rem;
-  }
-  
-  .cta-buttons {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .button {
-    width: 100%;
-  }
-}
-
-/* Features section */
-.features {
-  padding: 4rem 0;
-}
-
-.features h3 {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 3rem;
-  color: var(--main-color);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.feature-card {
+.chain-section {
   background-color: var(--white);
-  padding: 2rem;
+}
+
+.community-section {
+  background-color: var(--bg-color);
+}
+
+.text-content {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.chain-counter {
+  margin-top: 2rem;
+  font-size: 1.5rem;
+}
+
+.broken-links {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  display: block;
+}
+
+.feature-list {
+  list-style: none;
+  margin-top: 2rem;
+  text-align: left;
+  display: inline-block;
+}
+
+.feature-list li {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Canvas para el modelo 3D */
+.canvas-cont {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+}
+
+#canvas3d {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Estilos adicionales para las nuevas secciones */
+
+.routes-section {
+  background-color: var(--white);
+  padding: 5rem 0;
+}
+
+.city-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.city-card {
+  background: var(--bg-color);
+  padding: 1.5rem;
   border-radius: 8px;
   border: var(--border);
-  box-shadow: var(--shadow);
+  text-align: center;
   transition: transform 0.3s ease;
 }
 
-.feature-card:hover {
+.city-card:hover {
   transform: translateY(-5px);
 }
 
-.feature-icon {
+.city-icon {
   font-size: 2.5rem;
   margin-bottom: 1rem;
 }
 
-.feature-card h4 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  color: var(--primary-color);
-}
-
-/* Footer */
-.main-footer {
-  background-color: var(--main-color);
-  color: var(--white);
-  padding: 2rem 0;
-  border-top: var(--border);
-}
-
-.main-footer .container {
+.progress-chain {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.footer-nav ul {
-  display: flex;
-  list-style: none;
-  gap: 20px;
-}
-
-.footer-nav a {
-  color: var(--white);
-  text-decoration: none;
-}
-
-.footer-nav a:hover {
-  text-decoration: underline;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .hero .container {
-    flex-direction: column;
-  }
-  
-  .main-nav ul {
-    gap: 10px;
-  }
-  
-  .hero h2 {
-    font-size: 2rem;
-  }
-  
-  .cta-buttons {
-    flex-direction: column;
-  }
-}
-
-/* How It Works Section */
-.how-it-works {
-  padding: 4rem 0;
-  background-color: var(--white);
-  border-top: var(--border);
-  border-bottom: var(--border);
-}
-
-.how-it-works h3 {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 3rem;
-  color: var(--main-color);
-}
-
-.steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-.step {
-  background-color: var(--highlight-color);
-  padding: 2rem;
-  border-radius: 8px;
-  border: var(--border);
-  box-shadow: var(--shadow);
-  text-align: center;
-  transition: transform 0.3s ease;
-}
-
-.step:hover {
-  transform: translateY(-5px);
-}
-
-.step-number {
-  width: 50px;
-  height: 50px;
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 0 auto 1rem;
-  border: var(--border);
-  box-shadow: var(--shadow);
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
-.step h4 {
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-  color: var(--primary-color);
+.chain-link {
+  width: 20px;
+  height: 20px;
+  background-color: var(--main-color);
+  clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
 
-.demo-cta {
-  text-align: center;
-  margin-top: 2rem;
+.chain-link.broken {
+  background-color: var(--primary-color);
+  opacity: 0.6;
 }
 
-/* Demo Modal Styles */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+.vision-section {
+  background-color: var(--primary-color);
+  color: white;
 }
 
-.modal-content {
-  background-color: var(--bg-color);
-  margin: 5% auto;
-  padding: 2rem;
-  border: var(--border);
-  box-shadow: var(--shadow);
-  width: 80%;
-  max-width: 800px;
-  border-radius: 8px;
-  position: relative;
+.vision-statement {
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
 }
 
-.close-modal {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 1.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  color: var(--font-color);
-}
-
-.close-modal:hover {
-  color: var(--primary-color);
-}
-
-.demo-container {
-  display: flex;
+.vision-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2rem;
-  margin-top: 1.5rem;
 }
 
-.demo-screen {
-  flex: 1;
+.vision-item {
+  text-align: center;
+  padding: 1.5rem;
 }
 
-.demo-screen img {
-  width: 100%;
-  border-radius: 8px;
-  border: var(--border);
-}
-
-.demo-features {
-  flex: 1;
-}
-
-.demo-features h4 {
-  font-size: 1.3rem;
+.vision-icon {
+  font-size: 2rem;
   margin-bottom: 1rem;
-  color: var(--primary-color);
 }
 
-.demo-features ul {
-  list-style-type: none;
+.final-cta {
+  text-align: center;
+  padding: 6rem 0;
+  color: white;
+}
+
+.motivational-text {
+  font-size: 1.3rem;
+  font-style: italic;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.challenge-text {
+  font-weight: bold;
+  font-size: 1.2rem;
   margin-bottom: 2rem;
 }
 
-.demo-features li {
-  padding: 0.5rem 0;
-  font-size: 1.1rem;
-}
-
-.demo-buttons {
+.chain-animation {
   display: flex;
+  justify-content: center;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: 3rem;
 }
 
-/* Responsive adjustments for modal */
-@media (max-width: 768px) {
-  .modal-content {
-    width: 90%;
-    margin: 10% auto;
-  }
-  
-  .demo-container {
-    flex-direction: column;
-  }
+.chain-link.breaking {
+  animation: breakChain 1.5s infinite;
+}
+
+@keyframes breakChain {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
 }
