@@ -32,6 +32,14 @@ body {
     gap: 1rem;
 }
 
+.logo-link {
+    text-decoration: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .logo {
     width: 40px;
     height: 40px;

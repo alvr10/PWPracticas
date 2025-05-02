@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Usuario | RunTrackPro</title>
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="../../assets/css/profile/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- New Header -->
+    <header class="profile-top-header">
+        <div class="profile-header-content">
+            <div class="logo-container">
+                <a href="../social/feed.html" class="logo-link">
+                    <div class="logo">RT</div>
+                    <h1>RunTrackPro</h1>
+                </a>
+            </div>
+            <div class="profile-header-actions">
+                <nav class="profile-header-nav">
+                    <a title="feed" href="../social/feed.html" class="profile-header-link"><i class="fas fa-home"></i></a>
+                    <a title="post" href="../post/post.html" class="profile-header-link"><i class="fas fa-plus-square"></i></a>
+                    <a title="profile" href="#" class="profile-header-link active"><i class="fas fa-user"></i></a>
+                    <a title="settings" href="../settings/settings.html" class="profile-header-link"><i class="fas fa-cog"></i></a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="profile-container">
+        <header class="profile-header">
+            <div class="profile-cover"></div>
+            <div class="profile-info">
+                <div class="profile-avatar-container">
+                    <img id="profile-avatar" src="../../assets/img/default-avatar.jpg" alt="Avatar del usuario" class="profile-avatar">
+                    <button type="button" id="settings-btn" class="settings-btn" title="Configuración">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+                <h1 id="profile-name">Nombre Apellido</h1>
+                <h2 id="profile-username">@username</h2>
+            </div>
+        </header>
+
+        <main class="profile-content">
+            <section class="profile-section">
+                <h3><i class="fas fa-info-circle"></i> Información Personal</h3>
+                <div class="profile-details">
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-envelope"></i> Email:</span>
+                    <span id="profile-email" class="detail-value">usuario@ejemplo.com</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-birthday-cake"></i> Fecha de Nacimiento:</span>
+                    <span id="profile-birthdate" class="detail-value">01/01/1990</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Ubicación:</span>
+                    <span id="profile-location" class="detail-value">Ciudad, Provincia, País</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-running"></i> Actividad Preferida:</span>
+                    <span id="profile-activity" class="detail-value">Ciclismo en ruta</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-calendar-alt"></i> Miembro desde:</span>
+                    <span id="profile-join-date" class="detail-value">Enero 2023</span>
+                </div>
+                </div>
+            </section>
+
+            <section class="profile-section stats-section">
+                <h3><i class="fas fa-chart-line"></i> Estadísticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-activities">0</div>
+                        <div class="stat-label">Actividades</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-distance">0</div>
+                        <div class="stat-label">Kilómetros</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-friends">0</div>
+                        <div class="stat-label">Amigos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-aplausos">0</div>
+                        <div class="stat-label">Aplausos</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="profile-section recent-activities">
+                <h3><i class="fas fa-history"></i> Actividades Recientes</h3>
+                <div id="activities-list" class="activities-list">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de configuración -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fas fa-user-cog"></i> Configuración del Perfil</h2>
+            
+            <form id="profile-settings-form" class="settings-form">
+                <div class="form-section">
+                    <h3><i class="fas fa-id-card"></i> Información Básica</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="settings-name">Nombre</label>
+                            <input type="text" id="settings-name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="settings-lastname">Apellidos</label>
+                            <input type="text" id="settings-lastname" name="lastname" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settings-username">Nombre de usuario</label>
+                        <input type="text" id="settings-username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settings-birthdate">Fecha de nacimiento</label>
+                        <input type="date" id="settings-birthdate" name="birthdate" required>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Ubicación</h3>
+                    
+                    <div class="form-group">
+                        <label for="settings-country">País</label>
+                        <select id="settings-country" name="country" required>
+                        <option value="">Selecciona un país</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settings-province">Provincia</label>
+                        <select id="settings-province" name="province" required disabled>
+                        <option value="">Selecciona una provincia</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="settings-city">Localidad</label>
+                        <select id="settings-city" name="city" required disabled>
+                        <option value="">Selecciona una localidad</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-running"></i> Preferencias</h3>
+                    
+                    <div class="form-group">
+                        <label for="settings-activity">Actividad preferida</label>
+                        <select id="settings-activity" name="activity" required>
+                            <option value="">Selecciona tu actividad</option>
+                            <option value="1">Ciclismo en ruta</option>
+                            <option value="2">Ciclismo MTB</option>
+                            <option value="3">Senderismo</option>
+                            <option value="4">Carrera</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Configuración de privacidad</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" name="profile-public" id="settings-profile-public">
+                                <span class="checkmark"></span>
+                                Perfil público
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" name="show-email" id="settings-show-email">
+                                <span class="checkmark"></span>
+                                Mostrar email en perfil
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" name="activity-notifications" id="settings-activity-notifications" checked>
+                                <span class="checkmark"></span>
+                                Notificaciones de actividades
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-camera"></i> Foto de Perfil</h3>
+                    
+                    <div class="avatar-upload">
+                        <div class="avatar-preview">
+                            <img id="avatar-preview" src="../../assets/img/default-avatar.jpg" alt="Previsualización de avatar">
+                        </div>
+                        <div class="avatar-upload-controls">
+                            <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                            <button type="button" id="upload-btn" class="btn-secondary">
+                                <i class="fas fa-upload"></i> Subir imagen
+                            </button>
+                            <button type="button" id="remove-avatar-btn" class="btn-text">
+                                <i class="fas fa-trash-alt"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                    
+                <div class="form-actions">
+                    <button type="button" id="cancel-btn" class="btn-secondary">Cancelar</button>
+                    <button type="submit" id="save-btn" class="btn-primary">
+                        <span id="save-btn-text">Guardar cambios</span>
+                        <div id="save-btn-loader" class="btn-loader" style="display: none;"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../../assets/js/profile/profile.js"></script>
+</body>
+</html>
