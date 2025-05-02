@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/home.css">
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <title>RunTrackPro - Supera tus Límites</title>
+</head>
+<body>
+    <!-- Modelo de Cadena Spline -->
+    <div class="canvas-cont">
+        <canvas id="canvas3d"></canvas>
+    </div>
+
+    <header class="site-header">
+        <div class="header-content">
+            <div class="logo-container">
+                <div class="logo">RT</div>
+                <h1>RunTrackPro</h1>
+            </div>
+            
+            <nav class="main-nav">
+                <ul>
+                <li><a href="../auth/login.html">Iniciar Sesión</a></li>
+                <li><a href="../auth/register.html" class="button primary">Regístrate</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-background"></div>
+        <div class="container">
+            <div class="hero-content">
+                <h2>Rompe tus cadenas. Corre libre.</h2>
+                <p class="subtitle">Únete a la comunidad que está superando límites y compartiendo rutas de running</p>
+                <div class="cta-buttons">
+                    <a href="../auth/register.html" class="button primary">Comenzar Ahora</a>
+                    <a href="#demo" class="button secondary">Ver Demo</a>
+                </div>
+            </div>
+    </div>
+    </section>
+
+    <!-- Sección 1: La Cadena -->
+    <section id="part1" class="content-section chain-section">
+        <div class="container">
+            <div class="text-content">
+                <h3>Tus límites son solo cadenas mentales</h3>
+                <p>Cada vez que registras una ruta, rompes un eslabón de esa cadena que te limita. ¿Cuántos podrás romper este mes?</p>
+                <div class="chain-counter">
+                    <span class="broken-links">0</span>
+                    <span>eslabones rotos esta semana</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección 2: Comunidad -->
+    <section id="part2" class="content-section community-section">
+        <div class="container">
+            <div class="text-content">
+                <h3>Una comunidad de corredores conectados</h3>
+                <p>Más de 50.000 corredores ya están compartiendo sus rutas y retándose mutuamente. ¿A qué esperas para unirte?</p>
+                <ul class="feature-list">
+                <li>📌 Marca tus rutas favoritas</li>
+                <li>🏆 Retos mensuales personalizados</li>
+                <li>👥 Grupos por ubicación y nivel</li>
+                <li>📊 Seguimiento de progreso detallado</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección 3: Rutas por Ciudad -->
+    <section id="part3" class="content-section routes-section">
+        <div class="container">
+            <div class="text-content">
+                <h3>Descubre rutas en tu ciudad</h3>
+                <p>Cada calle es un nuevo eslabón por descubrir. Encuentra las rutas más populares en tu zona:</p>
+                
+                <div class="city-grid">
+                    <div class="city-card">
+                        <div class="city-icon">🏙️</div>
+                        <h4>Madrid</h4>
+                        <p>1.240 rutas registradas</p>
+                        <div class="progress-chain">
+                        <div class="chain-link"></div>
+                        <div class="chain-link"></div>
+                        <div class="chain-link broken"></div>
+                        <div class="chain-link"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="city-card">
+                        <div class="city-icon">🌊</div>
+                        <h4>Barcelona</h4>
+                        <p>980 rutas registradas</p>
+                        <div class="progress-chain">
+                        <div class="chain-link"></div>
+                        <div class="chain-link broken"></div>
+                        <div class="chain-link"></div>
+                        <div class="chain-link"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="city-card">
+                        <div class="city-icon">🏔️</div>
+                        <h4>Valencia</h4>
+                        <p>750 rutas registradas</p>
+                        <div class="progress-chain">
+                        <div class="chain-link broken"></div>
+                        <div class="chain-link"></div>
+                        <div class="chain-link"></div>
+                        <div class="chain-link"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="city-card">
+                        <div class="city-icon">🌄</div>
+                        <h4>Sevilla</h4>
+                        <p>620 rutas registradas</p>
+                        <div class="progress-chain">
+                        <div class="chain-link"></div>
+                        <div class="chain-link broken"></div>
+                        <div class="chain-link broken"></div>
+                        <div class="chain-link"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección 4: Nuestra Visión -->
+    <section id="part4" class="content-section vision-section">
+        <div class="container">
+            <div class="text-content">
+                <h3>Nuestros valores fundamentales</h3>
+                <p class="vision-statement">En RunTrackPro creemos que cada corredor es un eslabón único en una comunidad deportiva global. Nuestra misión:</p>
+                
+                <div class="vision-grid">
+                <div class="vision-item">
+                    <div class="vision-icon">🔗</div>
+                    <h4>Conectar</h4>
+                    <p>Romper el aislamiento del corredor solitario</p>
+                </div>
+                
+                <div class="vision-item">
+                    <div class="vision-icon">🏅</div>
+                    <h4>Motivar</h4>
+                    <p>Superar límites a través de retos colectivos</p>
+                </div>
+                
+                <div class="vision-item">
+                    <div class="vision-icon">🌎</div>
+                    <h4>Expandir</h4>
+                    <p>Crear la mayor red de rutas urbanas del mundo</p>
+                </div>
+                
+                <div class="vision-item">
+                    <div class="vision-icon">🌱</div>
+                    <h4>Sostenibilidad</h4>
+                    <p>Fomentar el deporte con conciencia ambiental</p>
+                </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección 5: Testimonios -->
+    <section id="testimonios" class="content-section testimonial-section">
+        <div class="container">
+            <h3>Lo que dicen nuestros corredores</h3>
+            
+            <div class="testimonial-slider">
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <p>"Desde que uso RunTrackPro he descubierto rutas increíbles que ni sabía que existían en mi ciudad. ¡He roto más de 30 eslabones este mes!"</p>
+                        <div class="testimonial-author">
+                        <img src="../assets/img/user-icon-mesh.jpg" alt="Ana G." class="testimonial-avatar">
+                        <div class="author-info">
+                            <h4>Ana G.</h4>
+                            <p>Madrid · 42 rutas completadas</p>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <p>"Los retos mensuales me mantienen motivado y la comunidad es increíblemente activa. He mejorado mi tiempo en 5K gracias a los consejos de otros corredores."</p>
+                        <div class="testimonial-author">
+                        <img src="../assets/img/user-icon-mesh-2.jpg" alt="Carlos M." class="testimonial-avatar">
+                        <div class="author-info">
+                            <h4>Carlos M.</h4>
+                            <p>Barcelona · 67 rutas completadas</p>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <p>"Al principio corría sola, ahora tengo un grupo de 8 personas con las que quedamos dos veces por semana. RunTrackPro cambió completamente mi experiencia de running."</p>
+                        <div class="testimonial-author">
+                        <img src="../assets/img/user-icon-mesh-3.jpg" alt="Laura P." class="testimonial-avatar">
+                        <div class="author-info">
+                            <h4>Laura P.</h4>
+                            <p>Valencia · 103 rutas completadas</p>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección 6: Llamada Final -->
+    <section id="part5" class="content-section final-cta">
+        <div class="container">
+            <div class="text-content">
+                <h3>¿Listo para romper tus cadenas?</h3>
+                <p class="motivational-text">Cada kilómetro que corres debilita los eslabones de la duda. Cada ruta compartida fortalece la comunidad.</p>
+                <p class="challenge-text">¡Únete hoy y sé parte del movimiento que está cambiando la forma en que corremos!</p>
+                
+                <div class="cta-buttons">
+                    <a href="../auth/register.html" class="button primary">Rompe tus límites</a>
+                    <a href="#como-funciona" class="button secondary">Cómo funciona</a>
+                </div>
+                
+                <div class="chain-animation">
+                <div class="chain-link"></div>
+                <div class="chain-link"></div>
+                <div class="chain-link breaking"></div>
+                <div class="chain-link"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <div class="logo">
+                        <span class="logo-icon">🏃‍♀️</span>
+                        <h2>RunTrackPro</h2>
+                    </div>
+                    <p>Conectando corredores, rompiendo límites.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon">📱</a>
+                        <a href="#" class="social-icon">📸</a>
+                        <a href="#" class="social-icon">🐦</a>
+                        <a href="#" class="social-icon">👥</a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Explorar</h3>
+                    <ul class="footer-links">
+                        <li><a href="#romper-cadenas">Rompe Cadenas</a></li>
+                        <li><a href="#como-funciona">Cómo Funciona</a></li>
+                        <li><a href="#testimonios">Testimonios</a></li>
+                        <li><a href="#parte3">Ciudades</a></li>
+                    </ul>
+                </div>
+                    
+                <div class="footer-column">
+                    <h3>Recursos</h3>
+                    <ul class="footer-links">
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#tutoriales">Tutoriales</a></li>
+                        <li><a href="#faq">Preguntas Frecuentes</a></li>
+                        <li><a href="#soporte">Soporte</a></li>
+                    </ul>
+                </div>
+                    
+                <div class="footer-column">
+                    <h3>Legal</h3>
+                    <ul class="footer-links">
+                        <li><a href="./legal/privacy.html">Política de Privacidad</a></li>
+                        <li><a href="./legal/privacy.html">Términos de Uso</a></li>
+                        <li><a href="./legal/cookies.html">Política de Cookies</a></li>
+                    </ul>
+                </div>
+            </div>
+        
+            <div class="footer-bottom">
+                <p>&copy; 2025 RunTrackPro. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/home.js" type="module"></script>
+</body>
+</html>

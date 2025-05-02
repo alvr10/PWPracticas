@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/auth.css">
+  <title>Iniciar Sesión</title>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Bienvenido</h1>
+    <h2>Inicia sesión para continuar</h2>
+    
+    <div id="message-container"></div>
+    
+    <form id="login-form">
+      <input type="email" name="email" id="email" placeholder="Correo electrónico" required>
+      <input type="password" name="password" id="password" placeholder="Contraseña" required>
+      
+      <div class="form-group">
+        <label class="checkbox-container">
+          <input type="checkbox" name="remember" id="remember">
+          <span class="checkmark"></span>
+          Recordar sesión
+        </label>
+      </div>
+      
+      <button type="submit" id="login-btn">Iniciar sesión</button>
+    </form>
+    
+    <p>¿No tienes una cuenta? <a href="register.html">Regístrate aquí</a>.</p>
+    <p><a href="recovery.html">¿Olvidaste tu contraseña?</a></p>
+  </div>
+  
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Inicializar el formulario de login
+      initLoginForm();
+    });
+  </script>
+</body>
+</html>
