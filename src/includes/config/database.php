@@ -1,10 +1,12 @@
 <?php
+// includes/config/database.php
 // Configuración de la base de datos
 class Database {
     private $host = 'localhost';
-    private $db_name = 'proyecto_escalable';
+    private $port = '3306';
+    private $db_name = 'red_social_deportiva';
     private $username = 'root';
-    private $password = '';
+    private $password = 'alvaro10';
     private $charset = 'utf8mb4';
     private $pdo;
     

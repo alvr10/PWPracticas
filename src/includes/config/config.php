@@ -1,4 +1,5 @@
 <?php
+// includes/config/config.php
 // Configuración general del proyecto
 define('BASE_URL', 'http://localhost/proyecto');
 define('PROJECT_NAME', 'RunTrackPro');

@@ -1,32 +1,39 @@
 <?php
-// Script para cerrar sesión
+// src/includes/auth/logout.php
 
-// Incluir necesario
-require_once __DIR__ . '/auth.php';
+// Permitir peticiones desde cualquier origen (solo para desarrollo)
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json");
 
-// Crear instancia de Auth
-$auth = new Auth();
+// Incluir el archivo de autenticación
+require_once 'auth.php';
+
+// Verificar método de solicitud
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Método no permitido'
+    ]);
+    exit;
+}
+
+// Obtener datos del cuerpo de la solicitud
+$data = json_decode(file_get_contents('php://input'), true);
+
+// Verificar si los datos requeridos están presentes
+if (!isset($data['token'])) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Token no proporcionado'
+    ]);
+    exit;
+}
 
 // Cerrar sesión
-$result = $auth->logout();
+$auth = new Auth();
+$result = $auth->logout($data['token']);
 
-// Eliminar posibles cookies de recordar
-if (isset($_COOKIE['remember_login'])) {
-    setcookie('remember_login', '', time() - 3600, '/');
-}
-
-// Verificar si es una petición AJAX
-$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-          strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
-
-if ($isAjax) {
-    // Devolver resultado como JSON si es AJAX
-    header('Content-Type: application/json');
-    echo json_encode($result);
-    exit;
-} else {
-    // Redirigir al login si no es AJAX
-    header("Location: " . BASE_URL . "/auth/login.html");
-    exit;
-}
+// Devolver resultado
+echo json_encode($result);
 ?>

@@ -1,264 +1,258 @@
 <?php
-// Incluir configuraciones necesarias
-require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../utils/validation.php';
+// src/includes/auth/auth.php
+
+// Incluir la configuración y la base de datos
+require_once '../config/config.php';
+require_once '../config/database.php';
 
 class Auth {
     private $db;
+    private $conn;
     
     public function __construct() {
-        $database = new Database();
-        $this->db = $database->connect();
+        $this->db = new Database();
+        $this->conn = $this->db->connect();
     }
     
-    /**
-     * Registrar un nuevo usuario
-     * 
-     * @param string $username Nombre de usuario
-     * @param string $email Correo electrónico
-     * @param string $password Contraseña
-     * @return array Resultado de la operación
-     */
-    public function register($username, $email, $password, $confirm_password) {
-        // Validar datos
-        $validation = new Validation();
-        $errors = [];
-        
-        // Validar nombre de usuario
-        if (!$validation->validateUsername($username)) {
-            $errors[] = "El nombre de usuario debe tener entre 3 y 50 caracteres alfanuméricos.";
-        }
-        
-        // Validar email
-        if (!$validation->validateEmail($email)) {
-            $errors[] = "El correo electrónico no es válido.";
-        }
-        
-        // Validar contraseña
-        if (!$validation->validatePassword($password)) {
-            $errors[] = "La contraseña debe tener al menos 6 caracteres.";
-        }
-        
-        // Validar confirmación de contraseña
-        if ($password !== $confirm_password) {
-            $errors[] = "Las contraseñas no coinciden.";
-        }
-        
-        // Si hay errores, devolver el array de errores
-        if (!empty($errors)) {
-            return [
-                'success' => false,
-                'errors' => $errors
-            ];
-        }
-        
-        // Verificar si el usuario o email ya existen
+    // Registrar un nuevo usuario
+    public function register($userData) {
         try {
-            $sql = "SELECT COUNT(*) FROM usuarios WHERE username = ? OR email = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$username, $email]);
+            // Comprobar si el email ya existe
+            $stmt = $this->conn->prepare("SELECT * FROM usuarios WHERE email = :email");
+            $stmt->bindParam(':email', $userData['email']);
+            $stmt->execute();
             
-            if ($stmt->fetchColumn() > 0) {
+            if ($stmt->rowCount() > 0) {
                 return [
                     'success' => false,
-                    'errors' => ["El nombre de usuario o correo electrónico ya están en uso."]
+                    'message' => 'El correo electrónico ya está registrado'
                 ];
             }
             
-            // Crear nuevo usuario
-            $sql = "INSERT INTO usuarios (username, email, password) VALUES (?, ?, ?)";
-            $stmt = $this->db->prepare($sql);
+            // Comprobar si el nombre de usuario ya existe
+            $stmt = $this->conn->prepare("SELECT * FROM usuarios WHERE username = :username");
+            $stmt->bindParam(':username', $userData['username']);
+            $stmt->execute();
             
-            // Encriptar contraseña
-            $password_hash = password_hash($password, PASSWORD_DEFAULT);
-            
-            if ($stmt->execute([$username, $email, $password_hash])) {
-                return [
-                    'success' => true,
-                    'message' => "Registro exitoso. Ahora puedes iniciar sesión."
-                ];
-            } else {
+            if ($stmt->rowCount() > 0) {
                 return [
                     'success' => false,
-                    'errors' => ["Error al registrar el usuario. Inténtalo de nuevo."]
+                    'message' => 'El nombre de usuario ya está en uso'
                 ];
             }
+            
+            // Hashear la contraseña
+            $hashedPassword = password_hash($userData['password'], PASSWORD_DEFAULT);
+            
+            // Generar código de validación
+            $codigoValidacion = bin2hex(random_bytes(16));
+            
+            // Preparar la consulta SQL
+            $stmt = $this->conn->prepare("
+                INSERT INTO usuarios (
+                    username, email, password, nombre, apellidos, 
+                    fecha_nacimiento, actividad_preferida_id, localidad_id,
+                    codigo_validacion
+                ) VALUES (
+                    :username, :email, :password, :nombre, :apellidos,
+                    :fecha_nacimiento, :actividad_preferida_id, :localidad_id,
+                    :codigo_validacion
+                )
+            ");
+            
+            // Vincular parámetros
+            $stmt->bindParam(':username', $userData['username']);
+            $stmt->bindParam(':email', $userData['email']);
+            $stmt->bindParam(':password', $hashedPassword);
+            $stmt->bindParam(':nombre', $userData['nombre']);
+            $stmt->bindParam(':apellidos', $userData['apellidos']);
+            $stmt->bindParam(':fecha_nacimiento', $userData['fecha_nacimiento']);
+            $stmt->bindParam(':actividad_preferida_id', $userData['actividad_preferida_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':localidad_id', $userData['localidad_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':codigo_validacion', $codigoValidacion);
+            
+            // Ejecutar la consulta
+            $stmt->execute();
+            
+            // Enviar correo de validación (aquí añadirías el código para enviar el correo)
+            // Para este ejemplo, simplemente retornamos éxito
+            
+            return [
+                'success' => true,
+                'message' => 'Usuario registrado correctamente. Por favor, valide su correo electrónico.'
+            ];
+            
         } catch (PDOException $e) {
             return [
                 'success' => false,
-                'errors' => ["Error de base de datos: " . $e->getMessage()]
+                'message' => 'Error al registrar el usuario: ' . $e->getMessage()
             ];
         }
     }
     
-    /**
-     * Iniciar sesión
-     * 
-     * @param string $email Correo electrónico
-     * @param string $password Contraseña
-     * @return array Resultado de la operación
-     */
-    public function login($email, $password) {
-        // Validar datos
-        $validation = new Validation();
-        $errors = [];
-        
-        // Validar email
-        if (!$validation->validateEmail($email)) {
-            $errors[] = "El correo electrónico no es válido.";
-        }
-        
-        // Validar contraseña
-        if (empty($password)) {
-            $errors[] = "La contraseña es obligatoria.";
-        }
-        
-        // Si hay errores, devolver el array de errores
-        if (!empty($errors)) {
-            return [
-                'success' => false,
-                'errors' => $errors
-            ];
-        }
-        
+    // Iniciar sesión
+    public function login($email, $password, $remember) {
         try {
-            // Registrar intento de login
-            $this->logLoginAttempt($email);
+            // Registrar intento de inicio de sesión
+            $this->recordLoginAttempt($email);
             
-            // Verificar intentos de login
-            if ($this->tooManyLoginAttempts($email)) {
+            // Comprobar si ha excedido el límite de intentos
+            if ($this->checkLoginAttempts($email)) {
                 return [
                     'success' => false,
-                    'errors' => ["Demasiados intentos de inicio de sesión. Inténtalo de nuevo más tarde."]
+                    'message' => 'Ha excedido el número de intentos permitidos. Por favor, inténtelo más tarde.'
                 ];
             }
             
-            // Buscar usuario por email
-            $sql = "SELECT id, username, email, password, rol, estado FROM usuarios WHERE email = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$email]);
+            // Buscar el usuario por email
+            $stmt = $this->conn->prepare("SELECT * FROM usuarios WHERE email = :email AND fecha_baja IS NULL");
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
             
-            if ($stmt->rowCount() != 1) {
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$user) {
                 return [
                     'success' => false,
-                    'errors' => ["No se encontró una cuenta con ese correo electrónico."]
+                    'message' => 'Credenciales incorrectas'
                 ];
             }
             
-            $usuario = $stmt->fetch();
-            
-            // Verificar si la cuenta está activa
-            if ($usuario['estado'] != 1) {
+            // Verificar la contraseña
+            if (!password_verify($password, $user['password'])) {
                 return [
                     'success' => false,
-                    'errors' => ["Esta cuenta está desactivada. Contacta al administrador."]
+                    'message' => 'Credenciales incorrectas'
                 ];
             }
             
-            // Verificar contraseña
-            if (password_verify($password, $usuario['password'])) {
-                // Iniciar sesión
-                session_start();
-                $_SESSION['usuario_id'] = $usuario['id'];
-                $_SESSION['username'] = $usuario['username'];
-                $_SESSION['email'] = $usuario['email'];
-                $_SESSION['rol'] = $usuario['rol'];
-                $_SESSION['auth'] = true;
-                
-                // Actualizar última sesión
-                $sql = "UPDATE usuarios SET ultima_sesion = NOW() WHERE id = ?";
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute([$usuario['id']]);
-                
-                return [
-                    'success' => true,
-                    'message' => "Inicio de sesión exitoso.",
-                    'user' => [
-                        'id' => $usuario['id'],
-                        'username' => $usuario['username'],
-                        'email' => $usuario['email'],
-                        'rol' => $usuario['rol']
-                    ]
-                ];
-            } else {
+            // Verificar si el usuario está validado
+            if (!$user['validado']) {
                 return [
                     'success' => false,
-                    'errors' => ["La contraseña es incorrecta."]
+                    'message' => 'Su cuenta no ha sido validada. Por favor, revise su correo electrónico.'
                 ];
             }
+            
+            // Generar token para el localStorage
+            $token = bin2hex(random_bytes(32));
+            
+            // En una implementación real, guardaríamos este token en la base de datos
+            // Para este ejemplo, usaremos una sesión PHP
+            session_start();
+            $_SESSION['auth'] = true;
+            $_SESSION['auth_token'] = $token;
+            $_SESSION['user_id'] = $user['id'];
+            
+            // Filtrar la información del usuario para enviar al cliente
+            $userData = [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'nombre' => $user['nombre'],
+                'apellidos' => $user['apellidos'],
+                'email' => $user['email'],
+                'actividad_preferida_id' => $user['actividad_preferida_id'],
+                'localidad_id' => $user['localidad_id'],
+                'imagen_perfil_id' => $user['imagen_perfil_id'],
+                'rol_id' => $user['rol_id']
+            ];
+            
+            return [
+                'success' => true,
+                'message' => 'Inicio de sesión exitoso',
+                'token' => $token,
+                'user' => $userData
+            ];
+            
         } catch (PDOException $e) {
             return [
                 'success' => false,
-                'errors' => ["Error de base de datos: " . $e->getMessage()]
+                'message' => 'Error al iniciar sesión: ' . $e->getMessage()
             ];
         }
     }
     
-    /**
-     * Cerrar sesión
-     */
-    public function logout() {
+    // Verificar la sesión
+    public function checkSession($token) {
         session_start();
-        $_SESSION = array();
-        session_destroy();
+        
+        // Verificar si la sesión tiene el mismo token
+        if (isset($_SESSION['auth']) && $_SESSION['auth'] === true && 
+            isset($_SESSION['auth_token']) && $_SESSION['auth_token'] === $token) {
+            return [
+                'valid' => true,
+                'user_id' => $_SESSION['user_id']
+            ];
+        }
         
         return [
-            'success' => true,
-            'message' => "Sesión cerrada correctamente."
+            'valid' => false
         ];
     }
     
-    /**
-     * Verificar si el usuario está autenticado
-     * 
-     * @return bool
-     */
-    public function isAuthenticated() {
+    // Cerrar sesión
+    public function logout($token) {
         session_start();
-        return isset($_SESSION['auth']) && $_SESSION['auth'] === true;
-    }
-    
-    /**
-     * Verificar rol del usuario
-     * 
-     * @param string $role Rol a verificar
-     * @return bool
-     */
-    public function hasRole($role) {
-        session_start();
-        return isset($_SESSION['rol']) && $_SESSION['rol'] === $role;
-    }
-    
-    /**
-     * Registrar intento de login
-     * 
-     * @param string $email Correo electrónico
-     */
-    private function logLoginAttempt($email) {
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $sql = "INSERT INTO login_attempts (email, ip) VALUES (?, ?)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$email, $ip]);
-    }
-    
-    /**
-     * Verificar si hay demasiados intentos de login
-     * 
-     * @param string $email Correo electrónico
-     * @return bool
-     */
-    private function tooManyLoginAttempts($email) {
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $timeLimit = date('Y-m-d H:i:s', strtotime('-15 minutes'));
         
-        $sql = "SELECT COUNT(*) FROM login_attempts 
-                WHERE (email = ? OR ip = ?) 
-                AND intento_tiempo > ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$email, $ip, $timeLimit]);
+        // Verificar si la sesión tiene el mismo token
+        if (isset($_SESSION['auth_token']) && $_SESSION['auth_token'] === $token) {
+            // Eliminar todas las variables de sesión
+            $_SESSION = array();
+            
+            // Destruir la sesión
+            session_destroy();
+            
+            return [
+                'success' => true,
+                'message' => 'Sesión cerrada correctamente'
+            ];
+        }
         
-        return $stmt->fetchColumn() >= 5; // Límite de 5 intentos en 15 minutos
+        return [
+            'success' => false,
+            'message' => 'Token inválido'
+        ];
+    }
+    
+    // Registrar intento de inicio de sesión
+    private function recordLoginAttempt($email) {
+        try {
+            $stmt = $this->conn->prepare("
+                INSERT INTO login_attempts (email, ip)
+                VALUES (:email, :ip)
+            ");
+            
+            $ip = $_SERVER['REMOTE_ADDR'];
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':ip', $ip);
+            $stmt->execute();
+            
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+    
+    // Comprobar si ha excedido el límite de intentos
+    private function checkLoginAttempts($email) {
+        try {
+            $stmt = $this->conn->prepare("
+                SELECT COUNT(*) as intentos
+                FROM login_attempts
+                WHERE email = :email
+                AND intento_tiempo > DATE_SUB(NOW(), INTERVAL 15 MINUTE)
+            ");
+            
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Limitar a 5 intentos en 15 minutos
+            return $result['intentos'] >= 5;
+        } catch (PDOException $e) {
+            return false;
+        }
     }
 }
 ?>

@@ -1,41 +1,43 @@
 <?php
-// Script para procesar el inicio de sesión
+// src/includes/auth/login.php
 
-// Verificar que sea una petición POST
+// Permitir peticiones desde cualquier origen (solo para desarrollo)
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json");
+
+// Incluir el archivo de autenticación
+require_once 'auth.php';
+
+// Verificar método de solicitud
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    $response = [
+    echo json_encode([
         'success' => false,
-        'errors' => ["Método no permitido"]
-    ];
-    
-    header('Content-Type: application/json');
-    echo json_encode($response);
+        'message' => 'Método no permitido'
+    ]);
     exit;
 }
 
-// Incluir necesario
-require_once __DIR__ . '/auth.php';
+// Obtener datos del cuerpo de la solicitud
+$data = json_decode(file_get_contents('php://input'), true);
 
-// Obtener datos del formulario
-$email = isset($_POST['email']) ? trim($_POST['email']) : '';
-$password = isset($_POST['password']) ? $_POST['password'] : '';
-$remember = isset($_POST['remember']) ? (bool)$_POST['remember'] : false;
-
-// Crear instancia de Auth
-$auth = new Auth();
-
-// Intentar login
-$result = $auth->login($email, $password);
-
-// Si el login es exitoso y se seleccionó "recordarme"
-if ($result['success'] && $remember) {
-    // Configurar una cookie que dure 30 días
-    $expiry = time() + (30 * 24 * 60 * 60);
-    setcookie('remember_login', base64_encode($email), $expiry, '/', '', false, true);
+// Verificar si los datos requeridos están presentes
+if (!isset($data['email']) || !isset($data['password'])) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Datos incompletos'
+    ]);
+    exit;
 }
 
-// Devolver resultado como JSON
-header('Content-Type: application/json');
+// Procesar el inicio de sesión
+$auth = new Auth();
+$result = $auth->login(
+    $data['email'],
+    $data['password'],
+    isset($data['remember']) ? $data['remember'] : false
+);
+
+// Devolver resultado
 echo json_encode($result);
-exit;
 ?>

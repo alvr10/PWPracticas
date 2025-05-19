@@ -1,35 +1,42 @@
 <?php
-// Script para procesar el registro de usuarios
+// src/includes/auth/register.php
 
-// Verificar que sea una petición POST
+// Permitir peticiones desde cualquier origen (solo para desarrollo)
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json");
+
+// Incluir el archivo de autenticación
+require_once 'auth.php';
+
+// Verificar método de solicitud
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    $response = [
+    echo json_encode([
         'success' => false,
-        'errors' => ["Método no permitido"]
-    ];
-    
-    header('Content-Type: application/json');
-    echo json_encode($response);
+        'message' => 'Método no permitido'
+    ]);
     exit;
 }
 
-// Incluir necesario
-require_once __DIR__ . '/auth.php';
+// Obtener datos del cuerpo de la solicitud
+$data = json_decode(file_get_contents('php://input'), true);
 
-// Obtener datos del formulario
-$username = isset($_POST['username']) ? trim($_POST['username']) : '';
-$email = isset($_POST['email']) ? trim($_POST['email']) : '';
-$password = isset($_POST['password']) ? $_POST['password'] : '';
-$confirm_password = isset($_POST['confirm-password']) ? $_POST['confirm-password'] : '';
+// Verificar si los datos requeridos están presentes
+if (!isset($data['nombre']) || !isset($data['apellidos']) || !isset($data['username']) || 
+    !isset($data['email']) || !isset($data['password']) || !isset($data['fecha_nacimiento']) || 
+    !isset($data['localidad_id']) || !isset($data['actividad_preferida_id'])) {
+    
+    echo json_encode([
+        'success' => false,
+        'message' => 'Datos incompletos'
+    ]);
+    exit;
+}
 
-// Crear instancia de Auth
+// Procesar el registro
 $auth = new Auth();
+$result = $auth->register($data);
 
-// Intentar registro
-$result = $auth->register($username, $email, $password, $confirm_password);
-
-// Devolver resultado como JSON
-header('Content-Type: application/json');
+// Devolver resultado
 echo json_encode($result);
-exit;
 ?>
