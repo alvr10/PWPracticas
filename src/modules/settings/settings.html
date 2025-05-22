@@ -4,46 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración | RunTrackPro</title>
-    <link rel="stylesheet" href="../../assets/css/main.css">
     <link rel="stylesheet" href="../../assets/css/settings/settings.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="settings-top-header">
-        <div class="settings-header-content">
-            <div class="logo-container">
-                <a href="../social/feed.html" class="logo-link">
-                    <div class="logo">RT</div>
-                    <h1>RunTrackPro</h1>
-                </a>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="navbar-content">
+            <a href="../social/feed.html" class="logo">RunTrackPro</a>
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar usuarios, rutas..." id="user-search">
+                    <button type="button" title="Buscar" id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
             </div>
-            <div class="settings-header-actions">
-                <nav class="settings-header-nav">
-                    <a title="feed" href="../social/feed.html" class="settings-header-link"><i class="fas fa-home"></i></a>
-                    <a title="post" href="../post/post.html" class="settings-header-link"><i class="fas fa-plus-square"></i></a>
-                    <a title="profile" href="../profile/profile.html" class="settings-header-link"><i class="fas fa-user"></i></a>
-                    <a title="settings" href="#" class="settings-header-link active"><i class="fas fa-cog"></i></a>
-                </nav>
-                <img src="../../assets/img/default-avatar.jpg" alt="User" class="settings-header-avatar">
-            </div>
+            <nav class="top-nav-links">
+                <a title="Inicio" href="../social/feed.html" class="nav-link"><i class="fas fa-home"></i></a>
+                <a title="Crear publicación" href="../post/post.html" class="nav-link"><i class="fas fa-plus-square"></i></a>
+                <a title="Perfil" href="../profile/profile.html" class="nav-link"><i class="fas fa-user"></i></a>
+                <a title="Configuración" href="#" class="nav-link active"><i class="fas fa-cog"></i></a>
+            </nav>
         </div>
-    </header>
+    </nav>
 
     <!-- Main Content -->
     <div class="settings-container">
-        <!-- Appearance Section -->
+        <div class="settings-header-section">
+            <h1 class="settings-page-title">
+                <i class="fas fa-cog"></i>
+                Configuración
+            </h1>
+            <p class="settings-page-subtitle">Personaliza tu experiencia en RunTrackPro</p>
+        </div>
+
+        <!-- Account Information Section -->
         <section class="settings-section">
-            <div class="settings-section-title">
-                <span><i class="fas fa-palette"></i> Apariencia</span>
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-user-circle"></i>
+                    Información de la cuenta
+                </h3>
             </div>
+            
+            <div class="account-overview">
+                <div class="account-avatar">
+                    <img src="../../assets/img/default-avatar.jpg" alt="Avatar" class="avatar-image">
+                </div>
+                <div class="account-details">
+                    <h4 class="account-name">Nombre Apellido</h4>
+                    <p class="account-email">usuario@ejemplo.com</p>
+                    <span class="account-badge">
+                        <i class="fas fa-check-circle"></i>
+                        Cuenta verificada
+                    </span>
+                </div>
+                <button class="btn btn-secondary" id="edit-profile-btn">
+                    <i class="fas fa-edit"></i>
+                    Editar perfil
+                </button>
+            </div>
+        </section>
+
+        <!-- Privacy & Security Section -->
+        <section class="settings-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-shield-alt"></i>
+                    Privacidad y Seguridad
+                </h3>
+            </div>
+            
+            <div class="settings-item clickable" id="change-email-btn">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Cambiar correo electrónico</span>
+                        <span class="settings-item-description">Actualiza tu dirección de correo</span>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            
+            <div class="settings-item clickable" id="change-password-btn">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Cambiar contraseña</span>
+                        <span class="settings-item-description">Actualiza tu contraseña de acceso</span>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            
             <div class="settings-item">
-                <div class="settings-item-label">
-                    <span class="settings-item-icon"><i class="fas fa-moon"></i></span>
-                    <span>Modo oscuro</span>
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Perfil público</span>
+                        <span class="settings-item-description">Permite que otros usuarios vean tu perfil</span>
+                    </div>
                 </div>
                 <label class="switch">
-                    <input title="dark mode toggle" type="checkbox" id="dark-mode-toggle">
+                    <input title="public profile toggle" type="checkbox" id="public-profile-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Compartir ubicación</span>
+                        <span class="settings-item-description">Mostrar ubicación en actividades</span>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input title="location sharing toggle" type="checkbox" id="location-sharing-toggle">
                     <span class="slider"></span>
                 </label>
             </div>
@@ -51,73 +137,275 @@
 
         <!-- Notifications Section -->
         <section class="settings-section">
-            <div class="settings-section-title">
-                <span><i class="fas fa-bell"></i> Notificaciones</span>
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-bell"></i>
+                    Notificaciones
+                </h3>
             </div>
+            
             <div class="settings-item">
-                <div class="settings-item-label">
-                    <span class="settings-item-icon"><i class="fas fa-comment-dots"></i></span>
-                    <span>Notificaciones de comentarios</span>
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-thumbs-up"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Aplausos</span>
+                        <span class="settings-item-description">Recibir notificaciones cuando aplaudan tus actividades</span>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input title="applause notifications" type="checkbox" id="applause-notifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Comentarios</span>
+                        <span class="settings-item-description">Recibir notificaciones de comentarios</span>
+                    </div>
                 </div>
                 <label class="switch">
                     <input title="comment notifications" type="checkbox" id="comment-notifications" checked>
                     <span class="slider"></span>
                 </label>
             </div>
+            
             <div class="settings-item">
-                <div class="settings-item-label">
-                    <span class="settings-item-icon"><i class="fas fa-hand-peace"></i></span>
-                    <span>Notificaciones de aplausos</span>
-                </div>
-                <label class="switch">
-                    <input title="like notifications" type="checkbox" id="like-notifications" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="settings-item">
-                <div class="settings-item-label">
-                    <span class="settings-item-icon"><i class="fas fa-user-plus"></i></span>
-                    <span>Notificaciones de amigos</span>
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Solicitudes de amistad</span>
+                        <span class="settings-item-description">Recibir notificaciones de nuevas solicitudes</span>
+                    </div>
                 </div>
                 <label class="switch">
                     <input title="friend notifications" type="checkbox" id="friend-notifications" checked>
                     <span class="slider"></span>
                 </label>
             </div>
+            
+            <div class="settings-item">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Logros</span>
+                        <span class="settings-item-description">Recibir notificaciones de nuevos logros</span>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input title="achievement notifications" type="checkbox" id="achievement-notifications" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Notificaciones por email</span>
+                        <span class="settings-item-description">Recibir resumen semanal por correo</span>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input title="email notifications" type="checkbox" id="email-notifications">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </section>
 
-        <!-- Account Section -->
+        <!-- Appearance Section -->
         <section class="settings-section">
-            <div class="settings-section-title">
-                <span><i class="fas fa-user-cog"></i> Cuenta</span>
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-palette"></i>
+                    Apariencia
+                </h3>
             </div>
-            <div class="settings-item" id="change-email-btn">
-                <div class="settings-item-label">
-                    <span class="settings-item-icon"><i class="fas fa-envelope"></i></span>
-                    <span>Cambiar correo electrónico</span>
+            
+            <div class="settings-item">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Modo oscuro</span>
+                        <span class="settings-item-description">Cambiar entre tema claro y oscuro</span>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input title="dark mode toggle" type="checkbox" id="dark-mode-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Idioma</span>
+                        <span class="settings-item-description">Cambiar el idioma de la aplicación</span>
+                    </div>
+                </div>
+                <select title="language select" class="language-select" id="language-select">
+                    <option value="es" selected>Español</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="it">Italiano</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Data & Storage Section -->
+        <section class="settings-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-database"></i>
+                    Datos y Almacenamiento
+                </h3>
+            </div>
+            
+            <div class="settings-item clickable">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Exportar datos</span>
+                        <span class="settings-item-description">Descargar todas tus actividades y datos</span>
+                    </div>
                 </div>
                 <i class="fas fa-chevron-right"></i>
             </div>
-            <div class="settings-item" id="change-password-btn">
-                <div class="settings-item-label">
-                    <span class="settings-item-icon"><i class="fas fa-lock"></i></span>
-                    <span>Cambiar contraseña</span>
+            
+            <div class="settings-item clickable">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Limpiar caché</span>
+                        <span class="settings-item-description">Liberar espacio de almacenamiento local</span>
+                    </div>
                 </div>
                 <i class="fas fa-chevron-right"></i>
+            </div>
+        </section>
+
+        <!-- Support Section -->
+        <section class="settings-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-question-circle"></i>
+                    Soporte y Ayuda
+                </h3>
+            </div>
+            
+            <div class="settings-item clickable">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-life-ring"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Centro de ayuda</span>
+                        <span class="settings-item-description">Preguntas frecuentes y guías</span>
+                    </div>
+                </div>
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+            
+            <div class="settings-item clickable">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Reportar problema</span>
+                        <span class="settings-item-description">Enviar feedback o reportar errores</span>
+                    </div>
+                </div>
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+            
+            <div class="settings-item clickable">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Términos y condiciones</span>
+                        <span class="settings-item-description">Leer términos de uso</span>
+                    </div>
+                </div>
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+            
+            <div class="settings-item clickable">
+                <div class="settings-item-content">
+                    <div class="settings-item-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="settings-item-info">
+                        <span class="settings-item-title">Política de privacidad</span>
+                        <span class="settings-item-description">Cómo manejamos tus datos</span>
+                    </div>
+                </div>
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+        </section>
+
+        <!-- Danger Zone -->
+        <section class="settings-section danger-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Zona peligrosa
+                </h3>
+            </div>
+            
+            <div class="danger-actions">
+                <button class="btn btn-warning" id="deactivate-account-btn">
+                    <i class="fas fa-user-slash"></i>
+                    Desactivar cuenta
+                </button>
+                
+                <button class="btn btn-danger" id="delete-account-btn">
+                    <i class="fas fa-trash-alt"></i>
+                    Eliminar cuenta
+                </button>
             </div>
         </section>
 
         <!-- Logout Button -->
-        <button class="btn-logout" id="logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-        </button>
+        <div class="logout-section">
+            <button class="btn btn-logout" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar sesión
+            </button>
+        </div>
     </div>
 
     <!-- Change Email Modal -->
     <div class="modal" id="email-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-envelope"></i> Cambiar correo electrónico</h3>
+                <h3 class="modal-title">
+                    <i class="fas fa-envelope"></i>
+                    Cambiar correo electrónico
+                </h3>
                 <span class="close-modal">&times;</span>
             </div>
             <form id="email-form">
@@ -127,15 +415,21 @@
                 </div>
                 <div class="form-group">
                     <label for="new-email">Nuevo correo electrónico</label>
-                    <input type="email" id="new-email" required>
+                    <input type="email" id="new-email" placeholder="nuevo@correo.com" required>
                 </div>
                 <div class="form-group">
                     <label for="email-password">Contraseña actual</label>
-                    <input type="password" id="email-password" required>
+                    <input type="password" id="email-password" placeholder="Tu contraseña actual" required>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary close-modal-btn">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    <button type="button" class="btn btn-secondary close-modal-btn">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Guardar cambios
+                    </button>
                 </div>
             </form>
         </div>
@@ -145,30 +439,64 @@
     <div class="modal" id="password-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-lock"></i> Cambiar contraseña</h3>
+                <h3 class="modal-title">
+                    <i class="fas fa-lock"></i>
+                    Cambiar contraseña
+                </h3>
                 <span class="close-modal">&times;</span>
             </div>
             <form id="password-form">
                 <div class="form-group">
                     <label for="current-password">Contraseña actual</label>
-                    <input type="password" id="current-password" required>
+                    <input type="password" id="current-password" placeholder="Tu contraseña actual" required>
                 </div>
                 <div class="form-group">
                     <label for="new-password">Nueva contraseña</label>
-                    <input type="password" id="new-password" required minlength="8">
+                    <input type="password" id="new-password" placeholder="Mínimo 8 caracteres" required minlength="8">
+                    <div class="password-strength" id="password-strength"></div>
                 </div>
                 <div class="form-group">
                     <label for="confirm-password">Confirmar nueva contraseña</label>
-                    <input type="password" id="confirm-password" required minlength="8">
+                    <input type="password" id="confirm-password" placeholder="Repite la nueva contraseña" required minlength="8">
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary close-modal-btn">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    <button type="button" class="btn btn-secondary close-modal-btn">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Cambiar contraseña
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script src="../../assets/js/settings/settings.js"></script>
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="confirmation-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirmar acción
+                </h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="confirmation-content">
+                <p id="confirmation-message">¿Estás seguro de que quieres realizar esta acción?</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary close-modal-btn">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" id="confirm-action-btn">
+                    <i class="fas fa-check"></i>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

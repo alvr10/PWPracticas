@@ -4,112 +4,329 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de Usuario | RunTrackPro</title>
-    <link rel="stylesheet" href="../../assets/css/main.css">
     <link rel="stylesheet" href="../../assets/css/profile/profile.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- New Header -->
-    <header class="profile-top-header">
-        <div class="profile-header-content">
-            <div class="logo-container">
-                <a href="../social/feed.html" class="logo-link">
-                    <div class="logo">RT</div>
-                    <h1>RunTrackPro</h1>
-                </a>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="navbar-content">
+            <a href="../social/feed.html" class="logo">RunTrackPro</a>
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar usuarios, rutas..." id="user-search">
+                    <button type="button" title="Buscar" id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
             </div>
-            <div class="profile-header-actions">
-                <nav class="profile-header-nav">
-                    <a title="feed" href="../social/feed.html" class="profile-header-link"><i class="fas fa-home"></i></a>
-                    <a title="post" href="../post/post.html" class="profile-header-link"><i class="fas fa-plus-square"></i></a>
-                    <a title="profile" href="#" class="profile-header-link active"><i class="fas fa-user"></i></a>
-                    <a title="settings" href="../settings/settings.html" class="profile-header-link"><i class="fas fa-cog"></i></a>
-                </nav>
-            </div>
+            <nav class="top-nav-links">
+                <a title="Inicio" href="../social/feed.html" class="nav-link"><i class="fas fa-home"></i></a>
+                <a title="Crear publicación" href="../post/post.html" class="nav-link"><i class="fas fa-plus-square"></i></a>
+                <a title="Perfil" href="#" class="nav-link active"><i class="fas fa-user"></i></a>
+                <a title="Configuración" href="../settings/settings.html" class="nav-link"><i class="fas fa-cog"></i></a>
+            </nav>
         </div>
-    </header>
+    </nav>
 
     <div class="profile-container">
+        <!-- Profile Header -->
         <header class="profile-header">
-            <div class="profile-cover"></div>
+            <div class="profile-cover">
+                <div class="cover-overlay"></div>
+            </div>
             <div class="profile-info">
                 <div class="profile-avatar-container">
-                    <img id="profile-avatar" src="../../assets/img/default-avatar.jpg" alt="Avatar del usuario" class="profile-avatar">
+                    <img id="profile-avatar" src="../../../public/profiles/gigachad_cat.jpg" alt="Avatar del usuario" class="profile-avatar">
                     <button type="button" id="settings-btn" class="settings-btn" title="Configuración">
                         <i class="fas fa-cog"></i>
                     </button>
                 </div>
-                <h1 id="profile-name">Nombre Apellido</h1>
-                <h2 id="profile-username">@username</h2>
+                <div class="profile-basic-info">
+                    <h1 id="profile-name">Nombre Apellido</h1>
+                    <h2 id="profile-username">@username</h2>
+                    <div class="profile-badges">
+                        <span class="badge active-badge">
+                            <i class="fas fa-running"></i>
+                            Activo
+                        </span>
+                        <span class="badge level-badge">
+                            <i class="fas fa-medal"></i>
+                            Nivel 5
+                        </span>
+                    </div>
+                </div>
             </div>
         </header>
 
         <main class="profile-content">
-            <section class="profile-section">
-                <h3><i class="fas fa-info-circle"></i> Información Personal</h3>
-                <div class="profile-details">
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-envelope"></i> Email:</span>
-                    <span id="profile-email" class="detail-value">usuario@ejemplo.com</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-birthday-cake"></i> Fecha de Nacimiento:</span>
-                    <span id="profile-birthdate" class="detail-value">01/01/1990</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Ubicación:</span>
-                    <span id="profile-location" class="detail-value">Ciudad, Provincia, País</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-running"></i> Actividad Preferida:</span>
-                    <span id="profile-activity" class="detail-value">Ciclismo en ruta</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label"><i class="fas fa-calendar-alt"></i> Miembro desde:</span>
-                    <span id="profile-join-date" class="detail-value">Enero 2023</span>
-                </div>
-                </div>
-            </section>
-
-            <section class="profile-section stats-section">
-                <h3><i class="fas fa-chart-line"></i> Estadísticas</h3>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="total-activities">0</div>
+            <!-- Quick Stats Overview -->
+            <section class="quick-stats-section">
+                <div class="stats-overview">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-activities">42</div>
                         <div class="stat-label">Actividades</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="total-distance">0</div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-distance">1,247</div>
                         <div class="stat-label">Kilómetros</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="total-friends">0</div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-friends">28</div>
                         <div class="stat-label">Amigos</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="total-aplausos">0</div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-aplausos">156</div>
                         <div class="stat-label">Aplausos</div>
                     </div>
                 </div>
             </section>
 
-            <section class="profile-section recent-activities">
-                <h3><i class="fas fa-history"></i> Actividades Recientes</h3>
-                <div id="activities-list" class="activities-list">
+            <!-- Main Content Grid -->
+            <div class="profile-grid">
+                <!-- Left Column -->
+                <div class="profile-left-column">
+                    <!-- Personal Information -->
+                    <section class="profile-section info-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-info-circle"></i> 
+                            Información Personal
+                        </h3>
+                        <div class="profile-details">
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-envelope"></i> 
+                                    Email
+                                </span>
+                                <span id="profile-email" class="detail-value">usuario@ejemplo.com</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-birthday-cake"></i> 
+                                    Fecha de Nacimiento
+                                </span>
+                                <span id="profile-birthdate" class="detail-value">01/01/1990</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    Ubicación
+                                </span>
+                                <span id="profile-location" class="detail-value">Madrid, España</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-running"></i> 
+                                    Actividad Preferida
+                                </span>
+                                <span id="profile-activity" class="detail-value">Ciclismo en ruta</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-calendar-alt"></i> 
+                                    Miembro desde
+                                </span>
+                                <span id="profile-join-date" class="detail-value">Enero 2023</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Detailed Statistics -->
+                    <section class="profile-section detailed-stats-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-line"></i> 
+                            Estadísticas Detalladas
+                        </h3>
+                        <div class="detailed-stats-grid">
+                            <div class="detailed-stat-card">
+                                <div class="stat-icon cycling">
+                                    <i class="fas fa-bicycle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <div class="stat-value">892 km</div>
+                                    <div class="stat-label">Ciclismo</div>
+                                </div>
+                            </div>
+                            <div class="detailed-stat-card">
+                                <div class="stat-icon running">
+                                    <i class="fas fa-running"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <div class="stat-value">234 km</div>
+                                    <div class="stat-label">Carrera</div>
+                                </div>
+                            </div>
+                            <div class="detailed-stat-card">
+                                <div class="stat-icon hiking">
+                                    <i class="fas fa-hiking"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <div class="stat-value">121 km</div>
+                                    <div class="stat-label">Senderismo</div>
+                                </div>
+                            </div>
+                            <div class="detailed-stat-card">
+                                <div class="stat-icon elevation">
+                                    <i class="fas fa-mountain"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <div class="stat-value">12,450 m</div>
+                                    <div class="stat-label">Desnivel</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
-            </section>
+
+                <!-- Right Column -->
+                <div class="profile-right-column">
+                    <!-- Recent Activities -->
+                    <section class="profile-section recent-activities-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-history"></i> 
+                            Actividades Recientes
+                        </h3>
+                        <div id="activities-list" class="activities-list">
+                            <!-- Sample Activity 1 -->
+                            <div class="activity-card">
+                                <div class="activity-header">
+                                    <div class="activity-type cycling">
+                                        <i class="fas fa-bicycle"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h4 class="activity-title">Ruta por la Sierra</h4>
+                                        <div class="activity-date">Hace 2 días</div>
+                                    </div>
+                                </div>
+                                <div class="activity-stats">
+                                    <span><i class="fas fa-route"></i> 45.2 km</span>
+                                    <span><i class="fas fa-clock"></i> 2h 15m</span>
+                                    <span><i class="fas fa-mountain"></i> 856m</span>
+                                </div>
+                                <div class="activity-actions">
+                                    <span class="activity-applause">
+                                        <i class="fas fa-thumbs-up"></i> 12 aplausos
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Sample Activity 2 -->
+                            <div class="activity-card">
+                                <div class="activity-header">
+                                    <div class="activity-type running">
+                                        <i class="fas fa-running"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h4 class="activity-title">Entrenamiento matutino</h4>
+                                        <div class="activity-date">Hace 4 días</div>
+                                    </div>
+                                </div>
+                                <div class="activity-stats">
+                                    <span><i class="fas fa-route"></i> 8.5 km</span>
+                                    <span><i class="fas fa-clock"></i> 35m 42s</span>
+                                    <span><i class="fas fa-tachometer-alt"></i> 4:12 min/km</span>
+                                </div>
+                                <div class="activity-actions">
+                                    <span class="activity-applause">
+                                        <i class="fas fa-thumbs-up"></i> 8 aplausos
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Sample Activity 3 -->
+                            <div class="activity-card">
+                                <div class="activity-header">
+                                    <div class="activity-type hiking">
+                                        <i class="fas fa-hiking"></i>
+                                    </div>
+                                    <div class="activity-info">
+                                        <h4 class="activity-title">Senderismo en el Parque Nacional</h4>
+                                        <div class="activity-date">Hace 1 semana</div>
+                                    </div>
+                                </div>
+                                <div class="activity-stats">
+                                    <span><i class="fas fa-route"></i> 12.8 km</span>
+                                    <span><i class="fas fa-clock"></i> 4h 30m</span>
+                                    <span><i class="fas fa-mountain"></i> 1,247m</span>
+                                </div>
+                                <div class="activity-actions">
+                                    <span class="activity-applause">
+                                        <i class="fas fa-thumbs-up"></i> 15 aplausos
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="load-more-activities">
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-plus"></i>
+                                Ver más actividades
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Achievements -->
+                    <section class="profile-section achievements-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-trophy"></i> 
+                            Logros
+                        </h3>
+                        <div class="achievements-grid">
+                            <div class="achievement-item earned">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-medal"></i>
+                                </div>
+                                <div class="achievement-info">
+                                    <h4>Primera actividad</h4>
+                                    <p>Completa tu primera actividad</p>
+                                </div>
+                            </div>
+                            <div class="achievement-item earned">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="achievement-info">
+                                    <h4>Racha de 7 días</h4>
+                                    <p>7 días consecutivos activo</p>
+                                </div>
+                            </div>
+                            <div class="achievement-item">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-mountain"></i>
+                                </div>
+                                <div class="achievement-info">
+                                    <h4>Escalador</h4>
+                                    <p>Completa 10,000m de desnivel</p>
+                                </div>
+                                <div class="achievement-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 85%;"></div>
+                                    </div>
+                                    <span class="progress-text">8,450/10,000m</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </main>
     </div>
 
-    <!-- Modal de configuración -->
+    <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h2><i class="fas fa-user-cog"></i> Configuración del Perfil</h2>
+            <h2 class="modal-title">
+                <i class="fas fa-user-cog"></i> 
+                Configuración del Perfil
+            </h2>
             
             <form id="profile-settings-form" class="settings-form">
                 <div class="form-section">
-                    <h3><i class="fas fa-id-card"></i> Información Básica</h3>
+                    <h3 class="form-section-title">
+                        <i class="fas fa-id-card"></i> 
+                        Información Básica
+                    </h3>
                     
                     <div class="form-row">
                         <div class="form-group">
@@ -134,32 +351,41 @@
                 </div>
                 
                 <div class="form-section">
-                    <h3><i class="fas fa-map-marker-alt"></i> Ubicación</h3>
+                    <h3 class="form-section-title">
+                        <i class="fas fa-map-marker-alt"></i> 
+                        Ubicación
+                    </h3>
                     
                     <div class="form-group">
                         <label for="settings-country">País</label>
                         <select id="settings-country" name="country" required>
-                        <option value="">Selecciona un país</option>
+                            <option value="">Selecciona un país</option>
+                            <option value="es">España</option>
+                            <option value="fr">Francia</option>
+                            <option value="it">Italia</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label for="settings-province">Provincia</label>
                         <select id="settings-province" name="province" required disabled>
-                        <option value="">Selecciona una provincia</option>
+                            <option value="">Selecciona una provincia</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label for="settings-city">Localidad</label>
                         <select id="settings-city" name="city" required disabled>
-                        <option value="">Selecciona una localidad</option>
+                            <option value="">Selecciona una localidad</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="form-section">
-                    <h3><i class="fas fa-running"></i> Preferencias</h3>
+                    <h3 class="form-section-title">
+                        <i class="fas fa-running"></i> 
+                        Preferencias
+                    </h3>
                     
                     <div class="form-group">
                         <label for="settings-activity">Actividad preferida</label>
@@ -195,18 +421,21 @@
                 </div>
                 
                 <div class="form-section">
-                    <h3><i class="fas fa-camera"></i> Foto de Perfil</h3>
+                    <h3 class="form-section-title">
+                        <i class="fas fa-camera"></i> 
+                        Foto de Perfil
+                    </h3>
                     
                     <div class="avatar-upload">
                         <div class="avatar-preview">
-                            <img id="avatar-preview" src="../../assets/img/default-avatar.jpg" alt="Previsualización de avatar">
+                            <img id="avatar-preview" src="../../../public/profiles/gigachad_cat.jpg" alt="Previsualización de avatar">
                         </div>
                         <div class="avatar-upload-controls">
                             <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
-                            <button type="button" id="upload-btn" class="btn-secondary">
+                            <button type="button" id="upload-btn" class="btn btn-secondary">
                                 <i class="fas fa-upload"></i> Subir imagen
                             </button>
-                            <button type="button" id="remove-avatar-btn" class="btn-text">
+                            <button type="button" id="remove-avatar-btn" class="btn btn-text">
                                 <i class="fas fa-trash-alt"></i> Eliminar
                             </button>
                         </div>
@@ -214,16 +443,20 @@
                 </div>
                     
                 <div class="form-actions">
-                    <button type="button" id="cancel-btn" class="btn-secondary">Cancelar</button>
-                    <button type="submit" id="save-btn" class="btn-primary">
-                        <span id="save-btn-text">Guardar cambios</span>
+                    <button type="button" id="cancel-btn" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" id="save-btn" class="btn btn-primary">
+                        <span id="save-btn-text">
+                            <i class="fas fa-save"></i>
+                            Guardar cambios
+                        </span>
                         <div id="save-btn-loader" class="btn-loader" style="display: none;"></div>
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
-    <script src="../../assets/js/profile/profile.js"></script>
 </body>
 </html>

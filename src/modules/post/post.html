@@ -4,47 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Publicación | RunTrackPro</title>
-    <link rel="stylesheet" href="../../assets/css/main.css">
     <link rel="stylesheet" href="../../assets/css/post/post.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="post-top-header">
-        <div class="post-header-content">
-            <div class="logo-container">
-                <a href="../social/feed.html" class="logo-link">
-                    <div class="logo">RT</div>
-                    <h1>RunTrackPro</h1>
-                </a>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="navbar-content">
+            <a href="../social/feed.html" class="logo">RunTrackPro</a>
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar usuarios, rutas..." id="user-search">
+                    <button type="button" title="Buscar" id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
             </div>
-            <div class="post-header-actions">
-                <nav class="post-header-nav">
-                    <a title="social" href="../social/feed.html" class="post-header-link"><i class="fas fa-home"></i></a>
-                    <a title="post" href="#" class="post-header-link active"><i class="fas fa-plus-square"></i></a>
-                    <a title="profile" href="../profile/profile.html" class="post-header-link"><i class="fas fa-user"></i></a>
-                    <a title="settings" href="../settings/settings.html" class="post-header-link"><i class="fas fa-cog"></i></a>
-                </nav>
-            </div>
+            <nav class="top-nav-links">
+                <a title="Inicio" href="../social/feed.html" class="nav-link"><i class="fas fa-home"></i></a>
+                <a title="Crear publicación" href="#" class="nav-link active"><i class="fas fa-plus-square"></i></a>
+                <a title="Perfil" href="../profile/profile.html" class="nav-link"><i class="fas fa-user"></i></a>
+                <a title="Configuración" href="../settings/settings.html" class="nav-link"><i class="fas fa-cog"></i></a>
+            </nav>
         </div>
-    </header>
+    </nav>
 
     <!-- Main Content -->
     <div class="post-container">
+        <div class="post-header-section">
+            <h1 class="post-page-title">
+                <i class="fas fa-plus-circle"></i>
+                Nueva Actividad
+            </h1>
+            <p class="post-page-subtitle">Comparte tu última aventura deportiva</p>
+        </div>
+
         <form class="post-form" id="activity-form">
             <!-- Basic Info Section -->
             <section class="form-section">
-                <h2><i class="fas fa-info-circle"></i> Información básica</h2>
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i> 
+                    Información básica
+                </h2>
                 
-                <div class="form-group">
-                    <label for="activity-type">Tipo de actividad</label>
-                    <select id="activity-type" required>
-                        <option value="">Selecciona un tipo</option>
-                        <option value="1">Ciclismo en ruta</option>
-                        <option value="2">Ciclismo MTB</option>
-                        <option value="3">Senderismo</option>
-                        <option value="4">Carrera</option>
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="activity-type">Tipo de actividad</label>
+                        <select id="activity-type" required>
+                            <option value="">Selecciona un tipo</option>
+                            <option value="1">Ciclismo en ruta</option>
+                            <option value="2">Ciclismo MTB</option>
+                            <option value="3">Senderismo</option>
+                            <option value="4">Carrera</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="activity-date">Fecha de la actividad</label>
+                        <input type="datetime-local" id="activity-date" required>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -53,39 +71,98 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="activity-date">Fecha de la actividad</label>
-                    <input type="datetime-local" id="activity-date" required>
-                </div>
-                
-                <div class="form-group">
                     <label for="activity-description">Descripción</label>
                     <textarea id="activity-description" placeholder="Describe tu actividad..."></textarea>
                 </div>
             </section>
 
+            <!-- Stats Section -->
+            <section class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i> 
+                    Estadísticas
+                </h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="distance">Distancia (km)</label>
+                        <input type="number" id="distance" step="0.1" placeholder="0.0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration">Duración</label>
+                        <input type="time" id="duration" placeholder="HH:MM">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="elevation">Desnivel (m)</label>
+                        <input type="number" id="elevation" placeholder="0">
+                    </div>
+                </div>
+            </section>
+
             <!-- Route Section -->
             <section class="form-section">
-                <h2><i class="fas fa-route"></i> Ruta</h2>
+                <h2 class="section-title">
+                    <i class="fas fa-route"></i> 
+                    Ruta
+                </h2>
                 
                 <div class="form-group">
                     <label for="activity-gpx">Subir archivo GPX</label>
-                    <input type="file" id="activity-gpx" accept=".gpx">
+                    <div class="file-input-container">
+                        <input type="file" id="activity-gpx" accept=".gpx" class="file-input">
+                        <label for="activity-gpx" class="file-input-label">
+                            <i class="fas fa-upload"></i>
+                            Seleccionar archivo GPX
+                        </label>
+                    </div>
+                    <div class="file-info" id="gpx-file-info"></div>
                 </div>
                 
                 <div class="map-preview" id="map-preview">
-                    <span>Vista previa del mapa aparecerá aquí</span>
+                    <div class="map-placeholder">
+                        <i class="fas fa-map"></i>
+                        <span>Vista previa del mapa aparecerá aquí</span>
+                    </div>
                 </div>
             </section>
 
             <!-- Companions Section -->
             <section class="form-section">
-                <h2><i class="fas fa-users"></i> Compañeros</h2>
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i> 
+                    Compañeros
+                </h2>
                 
                 <div class="form-group companion-search-container">
                     <label for="companion-search">Buscar amigos</label>
-                    <input type="text" id="companion-search" placeholder="Buscar por nombre...">
+                    <div class="search-input-container">
+                        <input type="text" id="companion-search" placeholder="Buscar por nombre...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
                     <div class="companion-results" id="companion-results">
-                        <!-- TODO: AJAX results will appear here -->
+                        <!-- Sample companion results -->
+                        <div class="companion-result">
+                            <img src="https://via.placeholder.com/150" alt="Companion" class="companion-avatar">
+                            <div class="companion-info">
+                                <span class="companion-name">María García</span>
+                                <span class="companion-activity">Última actividad: Ciclismo</span>
+                            </div>
+                            <button title="add companion" type="button" class="add-companion-btn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="companion-result">
+                            <img src="https://via.placeholder.com/150" alt="Companion" class="companion-avatar">
+                            <div class="companion-info">
+                                <span class="companion-name">Carlos López</span>
+                                <span class="companion-activity">Última actividad: Senderismo</span>
+                            </div>
+                            <button title="add companion" type="button" class="add-companion-btn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -96,11 +173,21 @@
 
             <!-- Images Section -->
             <section class="form-section">
-                <h2><i class="fas fa-images"></i> Imágenes</h2>
+                <h2 class="section-title">
+                    <i class="fas fa-images"></i> 
+                    Imágenes
+                </h2>
                 
                 <div class="form-group">
                     <label for="activity-images">Subir imágenes</label>
-                    <input type="file" id="activity-images" accept="image/*" multiple>
+                    <div class="file-input-container">
+                        <input type="file" id="activity-images" accept="image/*" multiple class="file-input">
+                        <label for="activity-images" class="file-input-label">
+                            <i class="fas fa-camera"></i>
+                            Seleccionar imágenes
+                        </label>
+                    </div>
+                    <div class="upload-hint">Puedes seleccionar múltiples imágenes</div>
                 </div>
                 
                 <div class="image-preview-container" id="image-preview-container">
@@ -110,12 +197,30 @@
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <button type="button" class="btn btn-secondary" id="cancel-btn">Cancelar</button>
-                <button type="submit" class="btn btn-primary" id="submit-btn">Publicar actividad</button>
+                <button type="button" class="btn btn-secondary" id="cancel-btn">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                    <i class="fas fa-share"></i>
+                    Publicar actividad
+                </button>
             </div>
         </form>
     </div>
 
-    <script src="../../assets/js/post/post.js"></script>
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content success-modal-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>¡Actividad publicada!</h3>
+            <p>Tu actividad se ha compartido exitosamente</p>
+            <button type="button" class="btn btn-primary" id="close-success-modal">
+                Ver en el feed
+            </button>
+        </div>
+    </div>
 </body>
 </html>
