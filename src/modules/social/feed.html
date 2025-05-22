@@ -34,50 +34,30 @@
         <aside class="left-sidebar">
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Estadísticas rápidas</h3>
-                <div class="quick-stats">
+                <div class="quick-stats" id="quick-stats">
                     <div class="stat-item">
                         <span class="stat-label">Esta semana</span>
-                        <span class="stat-value">24.5 km</span>
+                        <span class="stat-value" id="week-distance">0 km</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Este mes</span>
-                        <span class="stat-value">127 km</span>
+                        <span class="stat-value" id="month-distance">0 km</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Actividades</span>
-                        <span class="stat-value">12</span>
+                        <span class="stat-value" id="total-activities">0</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Amigos activos</span>
-                        <span class="stat-value">8</span>
+                        <span class="stat-value" id="active-friends">0</span>
                     </div>
                 </div>
             </div>
 
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Amigos recientes</h3>
-                <div class="recent-friends">
-                    <div class="friend-item">
-                        <img src="../../../public/profiles/senior_cat.jpeg" alt="Amigo" class="friend-avatar">
-                        <div class="friend-info">
-                            <div class="friend-name">María García</div>
-                            <div class="friend-status">Corrió hace 2h</div>
-                        </div>
-                    </div>
-                    <div class="friend-item">
-                        <img src="../../../public/profiles/gigachad_cat.jpg" alt="Amigo" class="friend-avatar">
-                        <div class="friend-info">
-                            <div class="friend-name">Carlos López</div>
-                            <div class="friend-status">En bicicleta ahora</div>
-                        </div>
-                    </div>
-                    <div class="friend-item">
-                        <img src="../../../public/profiles/cold_cat.jpg" alt="Amigo" class="friend-avatar">
-                        <div class="friend-info">
-                            <div class="friend-name">Ana Ruiz</div>
-                            <div class="friend-status">Senderismo ayer</div>
-                        </div>
-                    </div>
+                <div class="recent-friends" id="recent-friends">
+                    <!-- Recent friends will be loaded here -->
                 </div>
             </div>
         </aside>
@@ -88,8 +68,8 @@
             <section class="create-post">
                 <div class="post-header">
                     <div class="user-info">
-                        <img src="../../../public/profiles/cute_cat.jpeg" alt="Profile" class="user-avatar">
-                        <span class="username">Tú</span>
+                        <img src="../../assets/img/default-avatar.jpg" alt="Profile" class="user-avatar" id="current-user-avatar">
+                        <span class="username" id="current-username">Tú</span>
                     </div>
                     <button class="post-button" id="create-post-btn">Nueva actividad</button>
                 </div>
@@ -119,120 +99,34 @@
                             <div class="form-group">
                                 <label for="post-companions">Compañeros:</label>
                                 <input type="text" id="post-companions" placeholder="Buscar amigos...">
+                                <div id="companions-suggestions" class="companions-suggestions"></div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="post-images">Imágenes:</label>
                             <input type="file" id="post-images" accept="image/*" multiple>
+                            <div id="image-preview" class="image-preview"></div>
                         </div>
-                        <button type="submit" class="submit-button">Publicar actividad</button>
+                        <div class="form-actions">
+                            <button type="button" id="cancel-post-btn" class="btn-secondary">Cancelar</button>
+                            <button type="submit" class="submit-button">
+                                <span id="submit-text">Publicar actividad</span>
+                                <div id="submit-loader" class="submit-loader" style="display: none;"></div>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </section>
 
             <!-- Posts Feed -->
             <section class="posts-feed">
-                <!-- Sample Post 1 -->
-                <article class="post">
-                    <div class="post-header">
-                        <div class="user-info">
-                            <img src="../../../public/profiles/cold_cat.jpg" alt="Profile" class="user-avatar">
-                            <span class="username">María García</span>
-                        </div>
-                        <button type="button" title="Opciones" class="options-button">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </button>
-                    </div>
-                    <div class="post-content">
-                        <div class="activity-info">
-                            <div class="activity-header">
-                                <div class="activity-meta">
-                                    <span class="activity-type">Ciclismo en ruta</span>
-                                    <h3 class="activity-title">Ruta matutina por la Sierra</h3>
-                                    <div class="activity-stats">
-                                        <span><i class="fas fa-route"></i> 45.2 km</span>
-                                        <span><i class="fas fa-clock"></i> 2h 15m</span>
-                                        <span><i class="fas fa-mountain"></i> 856m</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="activity-map">
-                                <img src="../../../public/routes/cycling.jpeg" alt="Mapa de ruta" class="map-image">
-                            </div>
-                            <div class="activity-images">
-                                <img src="../../../public/activities/mountain_1.jpeg" alt="Activity image" class="activity-image">
-                                <img src="../../../public/activities/mountain_2.jpg" alt="Activity image" class="activity-image">
-                            </div>
-                            <div class="activity-companions">
-                                <span class="companions-label">Con:</span>
-                                <div class="companions-list">
-                                    <div class="companion-avatar">
-                                        <img src="../../../public/profiles/senior_cat.jpeg" alt="Companion">
-                                    </div>
-                                    <div class="companion-avatar">
-                                        <img src="../../../public/profiles/gigachad_cat.jpg" alt="Companion">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="post-footer">
-                        <div class="post-actions">
-                            <button class="like-button" data-activity-id="1">
-                                <i class="far fa-thumbs-up"></i> Aplaudir
-                            </button>
-                            <span class="like-count">24 aplausos</span>
-                        </div>
-                        <span class="post-date">Hace 3 horas</span>
-                    </div>
-                </article>
-
-                <!-- Sample Post 2 -->
-                <article class="post">
-                    <div class="post-header">
-                        <div class="user-info">
-                            <img src="../../../public/profiles/gigachad_cat.jpg" alt="Profile" class="user-avatar">
-                            <span class="username">Carlos López</span>
-                        </div>
-                        <button type="button" title="Opciones" class="options-button">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </button>
-                    </div>
-                    <div class="post-content">
-                        <div class="activity-info">
-                            <div class="activity-header">
-                                <div class="activity-meta">
-                                    <span class="activity-type">Senderismo</span>
-                                    <h3 class="activity-title">Excursión al Pico del Águila</h3>
-                                    <div class="activity-stats">
-                                        <span><i class="fas fa-route"></i> 12.8 km</span>
-                                        <span><i class="fas fa-clock"></i> 4h 30m</span>
-                                        <span><i class="fas fa-mountain"></i> 1,247m</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="activity-map">
-                                <img src="../../../public/routes/cycling.jpeg" alt="Mapa de ruta" class="map-image">
-                            </div>
-                            <div class="activity-images">
-                                <img src="../../../public/activities/mountain_2.jpg" alt="Activity image" class="activity-image">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="post-footer">
-                        <div class="post-actions">
-                            <button class="like-button" data-activity-id="2">
-                                <i class="far fa-thumbs-up"></i> Aplaudir
-                            </button>
-                            <span class="like-count">18 aplausos</span>
-                        </div>
-                        <span class="post-date">Ayer</span>
-                    </div>
-                </article>
+                <div id="activities-feed">
+                    <!-- Activities will be loaded here dynamically -->
+                </div>
             </section>
 
             <!-- Load More Button -->
-            <div class="load-more">
+            <div class="load-more" id="load-more-container" style="display: none;">
                 <button id="load-more-btn">Cargar más actividades</button>
             </div>
         </main>
@@ -241,34 +135,15 @@
         <aside class="right-sidebar">
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Actividades populares</h3>
-                <div class="trending-activities">
-                    <div class="trending-item">
-                        <div class="trending-icon">
-                            <i class="fas fa-running"></i>
-                        </div>
-                        <div class="trending-info">
-                            <div class="trending-name">Carrera matutina</div>
-                            <div class="trending-count">142 actividades hoy</div>
-                        </div>
-                    </div>
-                    <div class="trending-item">
-                        <div class="trending-icon">
-                            <i class="fas fa-bicycle"></i>
-                        </div>
-                        <div class="trending-info">
-                            <div class="trending-name">Ciclismo de ruta</div>
-                            <div class="trending-count">89 actividades hoy</div>
-                        </div>
-                    </div>
-                    <div class="trending-item">
-                        <div class="trending-icon">
-                            <i class="fas fa-hiking"></i>
-                        </div>
-                        <div class="trending-info">
-                            <div class="trending-name">Senderismo</div>
-                            <div class="trending-count">34 actividades hoy</div>
-                        </div>
-                    </div>
+                <div class="trending-activities" id="trending-activities">
+                    <!-- Trending activities will be loaded here -->
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Sugerencias</h3>
+                <div class="user-suggestions" id="user-suggestions">
+                    <!-- User suggestions will be loaded here -->
                 </div>
             </div>
         </aside>
@@ -280,16 +155,36 @@
             <span class="close-modal">&times;</span>
             <h2>Resultados de búsqueda</h2>
             <div id="search-results" class="search-results">
-                <div class="user-result">
-                    <img src="https://via.placeholder.com/150" alt="User" class="result-avatar">
-                    <div class="result-info">
-                        <span class="result-name">Usuario encontrado</span>
-                        <span class="result-activity">Última actividad: Carrera</span>
-                    </div>
-                    <button class="friend-action">Agregar amigo</button>
-                </div>
+                <!-- Search results will be populated here -->
             </div>
         </div>
     </div>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="modal">
+        <div class="modal-content image-modal-content">
+            <span class="close-modal">&times;</span>
+            <img id="modal-image" src="" alt="Imagen de actividad">
+        </div>
+    </div>
+
+    <!-- Comments Modal -->
+    <div id="comments-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Comentarios</h3>
+            <div id="comments-list" class="comments-list">
+                <!-- Comments will be loaded here -->
+            </div>
+            <form id="comment-form" class="comment-form">
+                <input type="text" id="comment-input" placeholder="Escribe un comentario..." required>
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../assets/js/main.js"></script>
+    <script src="../../assets/js/social/feed.js"></script>
 </body>
 </html>
