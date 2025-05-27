@@ -88,7 +88,7 @@ try {
         
         // Handle image uploads
         if (isset($_FILES['images']) && is_array($_FILES['images']['name'])) {
-            $upload_dir = '../../assets/img/activities/';
+            $upload_dir = '../../../public/activities/';
             
             // Create directory if it doesn't exist
             if (!is_dir($upload_dir)) {

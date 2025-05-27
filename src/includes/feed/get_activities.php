@@ -122,7 +122,7 @@ try {
         
         // Set user image path
         if ($activity['usuario_imagen']) {
-            $activity['usuario_imagen'] = '../../assets/img/profiles/' . $activity['usuario_imagen'];
+            $activity['usuario_imagen'] = '../../../public/profiles/' . $activity['usuario_imagen'];
         }
     }
     

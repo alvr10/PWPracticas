@@ -167,7 +167,7 @@ try {
         
         // Set user image path
         if ($activity['usuario_imagen']) {
-            $activity['usuario_imagen'] = '../../assets/img/profiles/' . $activity['usuario_imagen'];
+            $activity['usuario_imagen'] = '../../../public/profiles/' . $activity['usuario_imagen'];
         }
         
         // Add location info
@@ -232,7 +232,7 @@ try {
             $user_data['total_actividades'] = (int)$user_data['total_actividades'];
             
             if ($user_data['imagen_perfil']) {
-                $user_data['imagen_perfil'] = '../../assets/img/profiles/' . $user_data['imagen_perfil'];
+                $user_data['imagen_perfil'] = '../../../public/profiles/' . $user_data['imagen_perfil'];
             }
             
             // Add location info

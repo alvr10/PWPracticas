@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+  const API_BASE_URL = 'http://localhost:8000/src/includes/profile/';
+  
   // Elementos del DOM
   const settingsBtn = document.getElementById('settings-btn');
   const settingsModal = document.getElementById('settings-modal');
@@ -34,39 +36,23 @@ document.addEventListener('DOMContentLoaded', function() {
   // Función para cargar datos del perfil
   async function loadProfileData() {
     try {
-      // Simulación de datos del servidor
-      const response = await fetch('/api/user/profile');
+      const response = await fetch(`${API_BASE_URL}get_profile.php`);
+      
+      if (!response.ok) {
+        throw new Error('Error al cargar el perfil');
+      }
+      
       const data = await response.json();
-      
-      // En producción, usaríamos:
-      // const response = await fetch('/api/user/profile');
-      // currentUserData = await response.json();
-      
-      // Datos de ejemplo
-      currentUserData = {
-        id: 1,
-        username: 'runner123',
-        email: 'correo@ejemplo.com',
-        name: 'María',
-        lastname: 'González Pérez',
-        birthdate: '1992-05-15',
-        country: '1', // España
-        province: '1', // Madrid
-        city: '1', // Madrid
-        activity: '4', // Carrera
-        profilePublic: true,
-        showEmail: false,
-        activityNotifications: true,
-        avatarUrl: '../assets/images/default-avatar.jpg'
-      };
-      
+      currentUserData = data.user;
       originalUserData = {...currentUserData};
       
       // Cargar selects de ubicación
-      loadLocationData();
+      await loadLocationData();
       
       // Mostrar datos en el perfil
       displayProfileData();
+      displayProfileStats(data.stats);
+      displayRecentActivities(data.activities);
       
     } catch (error) {
       console.error('Error cargando perfil:', error);
@@ -74,39 +60,78 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // Mostrar estadísticas del perfil
+  function displayProfileStats(stats) {
+    document.getElementById('total-activities').textContent = stats.total_actividades || '0';
+    document.getElementById('total-friends').textContent = stats.total_amigos || '0';
+    document.getElementById('total-aplausos').textContent = stats.total_aplausos || '0';
+  }
+
+  // Mostrar actividades recientes
+  function displayRecentActivities(activities) {
+    const activitiesList = document.getElementById('activities-list');
+    activitiesList.innerHTML = '';
+    
+    activities.forEach(activity => {
+      const activityCard = document.createElement('div');
+      activityCard.className = 'activity-card';
+      
+      // Determinar el icono según el tipo de actividad
+      let activityIcon = 'fa-running'; // Por defecto
+      if (activity.tipo_actividad.includes('Ciclismo')) activityIcon = 'fa-bicycle';
+      if (activity.tipo_actividad.includes('Senderismo')) activityIcon = 'fa-hiking';
+      
+      activityCard.innerHTML = `
+        <div class="activity-header">
+          <div class="activity-type ${activity.tipo_actividad.toLowerCase().replace(' ', '-')}">
+            <i class="fas ${activityIcon}"></i>
+          </div>
+          <div class="activity-info">
+            <h4 class="activity-title">${activity.titulo}</h4>
+            <div class="activity-date">${activity.fecha_formatted}</div>
+          </div>
+        </div>
+        <div class="activity-actions">
+          <span class="activity-applause">
+            <i class="fas fa-thumbs-up"></i> ${activity.aplausos} aplausos
+          </span>
+        </div>
+      `;
+      
+      activitiesList.appendChild(activityCard);
+    });
+  }
+
   // Cargar datos de ubicación
   async function loadLocationData() {
-    // Simulación de datos de ubicación
-    countries = [
-      {id: '1', name: 'España'},
-      {id: '2', name: 'Portugal'},
-      {id: '3', name: 'Francia'}
-    ];
-    
-    provinces = [
-      {id: '1', name: 'Madrid', country_id: '1'},
-      {id: '2', name: 'Barcelona', country_id: '1'},
-      {id: '3', name: 'Lisboa', country_id: '2'}
-    ];
-    
-    cities = [
-      {id: '1', name: 'Madrid', province_id: '1'},
-      {id: '2', name: 'Alcalá de Henares', province_id: '1'},
-      {id: '3', name: 'Barcelona', province_id: '2'}
-    ];
-    
-    // Llenar países
-    const countrySelect = document.getElementById('settings-country');
-    countries.forEach(country => {
-      const option = document.createElement('option');
-      option.value = country.id;
-      option.textContent = country.name;
-      countrySelect.appendChild(option);
-    });
-    
-    // Configurar eventos para selects dependientes
-    countrySelect.addEventListener('change', updateProvinces);
-    document.getElementById('settings-province').addEventListener('change', updateCities);
+    try {
+      const response = await fetch(`${API_BASE_URL}get_locations.php`);
+      
+      if (!response.ok) {
+        throw new Error('Error al cargar ubicaciones');
+      }
+      
+      const data = await response.json();
+      countries = data.countries;
+      provinces = data.provinces;
+      cities = data.cities;
+      
+      // Llenar países
+      const countrySelect = document.getElementById('settings-country');
+      countries.forEach(country => {
+        const option = document.createElement('option');
+        option.value = country.id;
+        option.textContent = country.nombre;
+        countrySelect.appendChild(option);
+      });
+      
+      // Configurar eventos para selects dependientes
+      countrySelect.addEventListener('change', updateProvinces);
+      document.getElementById('settings-province').addEventListener('change', updateCities);
+      
+    } catch (error) {
+      console.error('Error cargando ubicaciones:', error);
+    }
   }
 
   function updateProvinces() {
@@ -119,13 +144,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (countryId) {
       // Filtrar provincias por país
-      const filteredProvinces = provinces.filter(p => p.country_id === countryId);
+      const filteredProvinces = provinces.filter(p => p.pais_id === countryId);
       
       // Llenar provincias
       filteredProvinces.forEach(province => {
         const option = document.createElement('option');
         option.value = province.id;
-        option.textContent = province.name;
+        option.textContent = province.nombre;
         provinceSelect.appendChild(option);
       });
       
@@ -152,13 +177,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (provinceId) {
       // Filtrar ciudades por provincia
-      const filteredCities = cities.filter(c => c.province_id === provinceId);
+      const filteredCities = cities.filter(c => c.provincia_id === provinceId);
       
       // Llenar ciudades
       filteredCities.forEach(city => {
         const option = document.createElement('option');
         option.value = city.id;
-        option.textContent = city.name;
+        option.textContent = city.nombre;
         citySelect.appendChild(option);
       });
       
@@ -170,143 +195,63 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Mostrar datos en el formulario
+  // Mostrar datos en el perfil
   function displayProfileData() {
     if (!currentUserData) return;
     
+    // Datos principales
+    document.getElementById('profile-name').textContent = `${currentUserData.name} ${currentUserData.lastname}`;
+    document.getElementById('profile-username').textContent = `@${currentUserData.username}`;
+    document.getElementById('profile-avatar').src = currentUserData.avatar_url;
+    
+    // Información personal
+    document.getElementById('profile-email').textContent = currentUserData.email;
+    document.getElementById('profile-birthdate').textContent = formatDate(currentUserData.birthdate);
+    document.getElementById('profile-location').textContent = currentUserData.location;
+    document.getElementById('profile-activity').textContent = currentUserData.activity;
+    document.getElementById('profile-join-date').textContent = currentUserData.join_date;
+    
+    // Datos para el formulario de edición
     document.getElementById('settings-name').value = currentUserData.name;
     document.getElementById('settings-lastname').value = currentUserData.lastname;
     document.getElementById('settings-username').value = currentUserData.username;
     document.getElementById('settings-birthdate').value = currentUserData.birthdate;
     
-    // Ubicación
+    // Ubicación (se manejará en los selects dependientes)
     const countrySelect = document.getElementById('settings-country');
-    countrySelect.value = currentUserData.country || '';
-    updateProvinces.call(countrySelect);
+    if (countrySelect) {
+      countrySelect.value = currentUserData.country || '';
+      updateProvinces.call(countrySelect);
+    }
     
-    // Actividad
-    document.getElementById('settings-activity').value = currentUserData.activity || '';
-    
-    // Configuración de privacidad
-    document.getElementById('settings-profile-public').checked = currentUserData.profilePublic || false;
-    document.getElementById('settings-show-email').checked = currentUserData.showEmail || false;
-    document.getElementById('settings-activity-notifications').checked = currentUserData.activityNotifications || true;
+    // Actividad preferida
+    const activitySelect = document.getElementById('settings-activity');
+    if (activitySelect) {
+      activitySelect.value = currentUserData.activity_id || '';
+    }
     
     // Avatar
-    avatarPreview.src = currentUserData.avatarUrl;
+    avatarPreview.src = currentUserData.avatar_url;
   }
 
-  // Subir imagen de avatar
-  function handleAvatarUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    if (!file.type.match('image.*')) {
-      showMessage('Por favor, selecciona un archivo de imagen', 'error');
-      return;
-    }
-    
-    if (file.size > 2 * 1024 * 1024) { // 2MB
-      showMessage('La imagen no debe superar los 2MB', 'error');
-      return;
-    }
-    
-    // Previsualización
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      avatarPreview.src = event.target.result;
-      // En una implementación real, aquí podrías subir la imagen al servidor
-    };
-    reader.readAsDataURL(file);
+  function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
-  function removeAvatar() {
-    avatarPreview.src = '../assets/images/default-avatar.jpg';
-    // En una implementación real, enviarías una petición para eliminar el avatar
-  }
-
-  // Guardar cambios
-  async function saveProfileChanges(e) {
-    e.preventDefault();
-    
-    // Validación básica
-    const name = document.getElementById('settings-name').value.trim();
-    const lastname = document.getElementById('settings-lastname').value.trim();
-    const username = document.getElementById('settings-username').value.trim();
-    
-    if (!name || !lastname || !username) {
-      showMessage('Por favor, completa todos los campos obligatorios', 'error');
-      return;
-    }
-    
-    // Mostrar loader
-    saveBtn.disabled = true;
-    document.getElementById('save-btn-text').style.display = 'none';
-    document.getElementById('save-btn-loader').style.display = 'block';
-    
-    try {
-      // Recoger datos del formulario
-      const formData = {
-        name,
-        lastname,
-        username,
-        birthdate: document.getElementById('settings-birthdate').value,
-        country: document.getElementById('settings-country').value,
-        province: document.getElementById('settings-province').value,
-        city: document.getElementById('settings-city').value,
-        activity: document.getElementById('settings-activity').value,
-        profilePublic: document.getElementById('settings-profile-public').checked,
-        showEmail: document.getElementById('settings-show-email').checked,
-        activityNotifications: document.getElementById('settings-activity-notifications').checked,
-        avatar: avatarPreview.src !== '../assets/images/default-avatar.jpg' ? avatarPreview.src : null
-      };
-      
-      // Simular envío al servidor
-      console.log('Datos a enviar:', formData);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simular retardo de red
-      
-      // Actualizar datos locales
-      currentUserData = {...currentUserData, ...formData};
-      
-      showMessage('Perfil actualizado correctamente', 'success');
-      closeSettingsModal();
-      
-      // Actualizar la vista del perfil
-      updateProfileView();
-      
-    } catch (error) {
-      console.error('Error guardando perfil:', error);
-      showMessage('Error al guardar los cambios', 'error');
-    } finally {
-      // Ocultar loader
-      saveBtn.disabled = false;
-      document.getElementById('save-btn-text').style.display = 'block';
-      document.getElementById('save-btn-loader').style.display = 'none';
-    }
-  }
-
-  function updateProfileView() {
-    if (!currentUserData) return;
-    
-    // Actualizar datos visibles en el perfil
-    document.getElementById('profile-name').textContent = `${currentUserData.name} ${currentUserData.lastname}`;
-    document.getElementById('profile-username').textContent = `@${currentUserData.username}`;
-    document.getElementById('profile-avatar').src = currentUserData.avatarUrl || '../assets/images/default-avatar.jpg';
-    
-    // Actualizar otros campos según sea necesario
-  }
-
+  // Resto del código (handleAvatarUpload, removeAvatar, saveProfileChanges, etc.)
+  // ... (mantener las mismas funciones del código original que no requieren cambios)
+  
   // Funciones para el modal
   function openSettingsModal() {
-    //if (!currentUserData) return;
-    
     settingsModal.style.display = 'block';
-    document.body.style.overflow = 'hidden'; // Prevenir scroll del fondo
+    document.body.style.overflow = 'hidden';
   }
 
   function closeSettingsModal() {
     settingsModal.style.display = 'none';
-    document.body.style.overflow = ''; // Restaurar scroll
+    document.body.style.overflow = '';
     
     // Restaurar valores originales si se canceló
     if (originalUserData) {

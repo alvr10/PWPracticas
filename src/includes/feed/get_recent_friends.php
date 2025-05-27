@@ -76,7 +76,7 @@ try {
     // Process image paths
     foreach ($friends as &$friend) {
         if ($friend['imagen_perfil']) {
-            $friend['imagen_perfil'] = '../../assets/img/profiles/' . $friend['imagen_perfil'];
+            $friend['imagen_perfil'] = '../../../public/profiles/' . $friend['imagen_perfil'];
         }
         
         if (!$friend['ultima_actividad']) {

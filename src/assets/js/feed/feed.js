@@ -5,6 +5,9 @@ let lastActivityId = 0;
 let isLoading = false;
 let selectedCompanions = [];
 
+// Base URL for API calls
+const API_BASE_URL = 'http://localhost:8000/src/includes/feed/';
+
 document.addEventListener('DOMContentLoaded', function() {
     // Get user data from localStorage
     const userData = JSON.parse(localStorage.getItem('user_data'));
@@ -116,7 +119,7 @@ function updateUserInfo() {
 // Load user statistics
 async function loadUserStats() {
     try {
-        const response = await fetch('../../includes/feed/get_user_stats.php', {
+        const response = await fetch(API_BASE_URL + 'get_user_stats.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -142,7 +145,7 @@ async function loadUserStats() {
 // Load recent friends
 async function loadRecentFriends() {
     try {
-        const response = await fetch('../../includes/feed/get_recent_friends.php', {
+        const response = await fetch(API_BASE_URL + '/get_recent_friends.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -180,7 +183,7 @@ async function loadRecentFriends() {
 // Load trending activities
 async function loadTrendingActivities() {
     try {
-        const response = await fetch('../../includes/feed/get_trending_activities.php', {
+        const response = await fetch(API_BASE_URL + 'get_trending_activities.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -220,7 +223,7 @@ async function loadTrendingActivities() {
 // Load user suggestions
 async function loadUserSuggestions() {
     try {
-        const response = await fetch('../../includes/feed/get_user_suggestions.php', {
+        const response = await fetch(API_BASE_URL + 'get_user_suggestions.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -267,7 +270,7 @@ async function loadFeedActivities(loadMore = false) {
     }
     
     try {
-        const response = await fetch('../../includes/feed/get_activities.php', {
+        const response = await fetch(API_BASE_URL + 'get_activities.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -457,7 +460,7 @@ async function handleNewPostSubmit(e) {
         // Add companions
         formData.append('companions', JSON.stringify(selectedCompanions));
         
-        const response = await fetch('../../includes/feed/create_activity.php', {
+        const response = await fetch(API_BASE_URL + 'create_activity.php', {
             method: 'POST',
             body: formData
         });
@@ -534,7 +537,7 @@ async function handleCompanionsSearch(e) {
     }
     
     try {
-        const response = await fetch('../../includes/feed/search_friends.php', {
+        const response = await fetch(API_BASE_URL + 'search_friends.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -725,7 +728,7 @@ async function toggleApplause(activityId) {
     const isActive = button.classList.contains('active');
     
     try {
-        const response = await fetch('../../includes/feed/toggle_applause.php', {
+        const response = await fetch(API_BASE_URL + 'toggle_applause.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -761,7 +764,7 @@ async function toggleApplause(activityId) {
 // Follow user
 async function followUser(userId) {
     try {
-        const response = await fetch('../../includes/feed/follow_user.php', {
+        const response = await fetch(API_BASE_URL + 'follow_user.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -839,7 +842,7 @@ async function performSearch(query) {
     showLoadingState();
     
     try {
-        const response = await fetch('../../includes/feed/search_activities.php', {
+        const response = await fetch(API_BASE_URL + 'search_activities.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -887,7 +890,7 @@ function showSearchResults(users, query) {
         const userElement = document.createElement('div');
         userElement.className = 'user-result';
         userElement.innerHTML = `
-            <img src="${user.imagen_perfil || '../../assets/img/default-avatar.jpg'}" 
+            <img src="${user.imagen_perfil || '../../img/default-avatar.jpg'}" 
                  alt="${user.nombre}" class="result-avatar">
             <div class="result-info">
                 <span class="result-name">${user.nombre} ${user.apellidos}</span>
