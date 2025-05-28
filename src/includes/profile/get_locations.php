@@ -5,10 +5,10 @@ header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../config/database.php';
+require_once '../auth/auth_functions.php';
 
 try {
-    $db = new Database();
-    $pdo = $db->connect();
+    $pdo = get_db_connection();
 
     // Obtener países
     $countriesStmt = $pdo->query("SELECT id, nombre FROM paises ORDER BY nombre");

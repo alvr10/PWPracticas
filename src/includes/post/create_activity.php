@@ -5,6 +5,7 @@ header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../config/database.php';
+require_once '../auth/auth_functions.php';
 
 error_log("Create activity endpoint called");
 
@@ -30,14 +31,13 @@ try {
     
     $token = $_POST['token'];
     
-    // Simple token verification using session
-    session_start();
-    if (!isset($_SESSION['auth_token']) || $_SESSION['auth_token'] !== $token || 
-        !isset($_SESSION['user_id']) || $_SESSION['auth'] !== true) {
+    // Verify authentication using auth_functions
+    $user = verify_token($token);
+    if (!$user) {
         throw new Exception('Invalid or expired token');
     }
     
-    $user_id = $_SESSION['user_id'];
+    $user_id = $user['id'];
     error_log("Authenticated user ID: " . $user_id);
     
     // Validate required fields
@@ -58,8 +58,7 @@ try {
     
     error_log("Creating activity: '$titulo' of type $tipo_actividad_id");
     
-    $db = new Database();
-    $pdo = $db->connect();
+    $pdo = get_db_connection();
     $pdo->beginTransaction();
     
     try {

@@ -4,11 +4,8 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type');
-
 require_once '../config/database.php';
+require_once '../auth/auth_functions.php';
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -30,16 +27,14 @@ try {
     
     $token = $input['token'];
     
-    // Simple token verification using session
-    session_start();
-    if (!isset($_SESSION['auth_token']) || $_SESSION['auth_token'] !== $token || 
-        !isset($_SESSION['user_id']) || $_SESSION['auth'] !== true) {
+    // Verify authentication using auth_functions
+    $user = verify_token($token);
+    if (!$user) {
         throw new Exception('Invalid or expired token');
     }
     
-    $userId = $_SESSION['user_id'];
-    $db = new Database();
-    $pdo = $db->connect();
+    $userId = $user['id'];
+    $pdo = get_db_connection();
 
     // Obtener datos básicos del usuario
     $stmt = $pdo->prepare("
@@ -117,7 +112,6 @@ try {
     // Formatear respuesta
     $response = [
         'success' => true,
-        'success' => true,
         'user' => [
             'id' => (int)$userData['id'],
             'username' => $userData['username'],
@@ -155,3 +149,4 @@ try {
         'error' => $e->getMessage()
     ]);
 }
+?>
