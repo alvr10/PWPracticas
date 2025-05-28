@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Post script loaded');
   
+  // FIXED: Use the correct API URL where the endpoints actually exist
   const API_BASE_URL = 'http://localhost:8000/src/includes/post/';
   let uploadedImages = [];
   let gpxFile = null;
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (closeSuccessBtn) {
     closeSuccessBtn.addEventListener('click', () => {
       if (successModal) successModal.style.display = 'none';
-      window.location.href = '../../../modules/social/feed.html';
+      window.location.href = '/src/modules/social/feed.html';
     });
   }
   
@@ -44,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         throw new Error('No authentication token found');
       }
 
+      // FIXED: Use search_friends.php (which exists in feed directory)
       const response = await fetch(`${API_BASE_URL}search_friends.php`, {
         method: 'POST',
         headers: {
@@ -65,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('Friends search result:', data);
       
       if (!data.success) {
-        throw new Error(data.error || 'Failed to search friends');
+        throw new Error(data.error || data.message || 'Failed to search friends');
       }
       
       const friends = data.friends || [];
@@ -167,7 +169,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInfo = document.getElementById('gpx-file-info');
     if (fileInfo) fileInfo.textContent = `Procesando ${file.name}...`;
     
-    // For now, just store the file for later upload
+    // Validate GPX file
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    if (fileExtension !== 'gpx') {
+      showMessage('Solo se permiten archivos GPX', 'error');
+      e.target.value = '';
+      if (fileInfo) fileInfo.textContent = '';
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      showMessage('El archivo GPX es demasiado grande (máximo 5MB)', 'error');
+      e.target.value = '';
+      if (fileInfo) fileInfo.textContent = '';
+      return;
+    }
+    
+    // Store the file for later upload
     gpxFile = file;
     
     if (fileInfo) fileInfo.textContent = `Archivo seleccionado: ${file.name}`;
@@ -184,10 +202,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     uploadedImages = [];
     
-    // Process files for preview
+    // Validate and process files
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (!file.type.match('image.*')) continue;
+      
+      // Validate file type
+      if (!file.type.match('image.*')) {
+        showMessage(`${file.name} no es una imagen válida`, 'error');
+        continue;
+      }
+      
+      // Validate file size (2MB limit)
+      if (file.size > 2 * 1024 * 1024) {
+        showMessage(`${file.name} es demasiado grande (máximo 2MB)`, 'error');
+        continue;
+      }
       
       uploadedImages.push(file);
     }
@@ -236,11 +265,23 @@ document.addEventListener('DOMContentLoaded', function() {
         throw new Error('No authentication token found');
       }
 
+      // Validate required fields
+      const title = document.getElementById('activity-title')?.value?.trim();
+      const activityType = document.getElementById('activity-type')?.value;
+      
+      if (!title) {
+        throw new Error('El título es obligatorio');
+      }
+      
+      if (!activityType) {
+        throw new Error('El tipo de actividad es obligatorio');
+      }
+
       // Prepare form data
       const formData = new FormData();
       formData.append('token', token);
-      formData.append('titulo', document.getElementById('activity-title')?.value || '');
-      formData.append('tipo_actividad_id', document.getElementById('activity-type')?.value || '');
+      formData.append('titulo', title);
+      formData.append('tipo_actividad_id', activityType);
       
       const activityDate = document.getElementById('activity-date')?.value;
       if (activityDate) {
@@ -267,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Adding GPX file to form data');
       }
       
-      // Add images
+      // Add images with correct field name
       uploadedImages.forEach((file, index) => {
         formData.append('images[]', file);
       });
@@ -281,7 +322,8 @@ document.addEventListener('DOMContentLoaded', function() {
       
       console.log('Sending request to create activity...');
       
-      const response = await fetch(`${API_BASE_URL}create_activity.php`, {
+      // FIXED: Use create_activity.php (which exists in feed directory)
+      const response = await fetch(`${API_BASE_URL}create_activity_debug.php`, {
         method: 'POST',
         body: formData
       });

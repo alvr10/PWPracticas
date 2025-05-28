@@ -107,7 +107,7 @@ function updateUserInfo() {
     const avatarElements = document.querySelectorAll('#current-user-avatar');
     avatarElements.forEach(avatar => {
         if (currentUser.imagen_perfil_id) {
-            avatar.src = `../../assets/img/profiles/${currentUser.imagen_perfil_id}.jpg`;
+            avatar.src = `../../../public/profiles/${currentUser.imagen_perfil_id}.jpg`;
         }
     });
     
@@ -147,7 +147,7 @@ async function loadUserStats() {
 // Load recent friends
 async function loadRecentFriends() {
     try {
-        const response = await fetch(API_BASE_URL + '/get_recent_friends.php', {
+        const response = await fetch(API_BASE_URL + 'get_recent_friends.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -167,7 +167,7 @@ async function loadRecentFriends() {
                 const friendElement = document.createElement('div');
                 friendElement.className = 'friend-item';
                 friendElement.innerHTML = `
-                    <img src="${friend.imagen_perfil || '../../assets/img/default-avatar.jpg'}" 
+                    <img src="${friend.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
                          alt="${friend.nombre}" class="friend-avatar">
                     <div class="friend-info">
                         <div class="friend-name">${friend.nombre} ${friend.apellidos}</div>
@@ -245,13 +245,15 @@ async function loadUserSuggestions() {
                 const suggestionElement = document.createElement('div');
                 suggestionElement.className = 'suggestion-item';
                 suggestionElement.innerHTML = `
-                    <img src="${user.imagen_perfil || '../../assets/img/default-avatar.jpg'}" 
+                    <img src="${user.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
                          alt="${user.nombre}" class="suggestion-avatar">
                     <div class="suggestion-info">
                         <div class="suggestion-name">${user.nombre} ${user.apellidos}</div>
                         <div class="suggestion-meta">${user.ubicacion || 'Ubicación no disponible'}</div>
                     </div>
-                    <button class="follow-btn" onclick="followUser(${user.id})">Seguir</button>
+                    <button class="follow-btn" onclick="followUser(${user.id})" id="follow-btn-${user.id}">
+                        Seguir
+                    </button>
                 `;
                 container.appendChild(suggestionElement);
             });
@@ -388,10 +390,10 @@ function createActivityElement(activity) {
                 ${activity.imagenes && activity.imagenes.length > 0 ? `
                     <div class="activity-images">
                         ${activity.imagenes.map(img => `
-                            <img src="../../assets/img/activities/${img.nombre}" 
+                            <img src="../../../public/activities/${img.nombre}" 
                                  alt="Imagen de actividad" 
                                  class="activity-image"
-                                 onclick="openImageModal('../../assets/img/activities/${img.nombre}')">
+                                 onclick="openImageModal('../../../public/activities/${img.nombre}')">
                         `).join('')}
                     </div>
                 ` : ''}
@@ -402,7 +404,7 @@ function createActivityElement(activity) {
                         <div class="companions-list">
                             ${activity.companeros.map(c => `
                                 <div class="companion-avatar">
-                                    <img src="${c.imagen_perfil || '../../assets/img/default-avatar.jpg'}" 
+                                    <img src="${c.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
                                          alt="${c.nombre}" title="${c.nombre} ${c.apellidos}">
                                 </div>
                             `).join('')}
@@ -559,7 +561,7 @@ async function handleCompanionsSearch(e) {
                 const suggestionElement = document.createElement('div');
                 suggestionElement.className = 'companion-suggestion';
                 suggestionElement.innerHTML = `
-                    <img src="${friend.imagen_perfil || '../../assets/img/default-avatar.jpg'}" 
+                    <img src="${friend.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
                          alt="${friend.nombre}" class="suggestion-avatar">
                     <span class="suggestion-name">${friend.nombre} ${friend.apellidos}</span>
                 `;
@@ -763,10 +765,95 @@ async function toggleApplause(activityId) {
     }
 }
 
-// Follow user
-async function followUser(userId) {
+// Follow user - Enhanced with follow/unfollow functionality
+async function followUser(userId, action = 'follow') {
+    const button = document.getElementById(`follow-btn-${userId}`);
+    if (!button) return;
+    
+    // Show loading state
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+    
     try {
         const response = await fetch(API_BASE_URL + 'follow_user.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: localStorage.getItem('auth_token'),
+                user_id: userId,
+                action: action
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update button based on new status
+            if (data.is_following) {
+                button.textContent = 'Siguiendo';
+                button.className = 'follow-btn following';
+                button.onclick = () => unfollowUser(userId);
+                showSuccess(`Ahora sigues a ${data.target_user.name}`);
+            } else {
+                button.textContent = 'Seguir';
+                button.className = 'follow-btn';
+                button.onclick = () => followUser(userId);
+                showSuccess(`Has dejado de seguir a ${data.target_user.name}`);
+            }
+            
+            // Update follower counts if displayed
+            updateFollowerCounts(userId, data.follower_count, data.following_count);
+            
+            // Refresh suggestions to remove followed user
+            if (data.is_following) {
+                setTimeout(() => {
+                    loadUserSuggestions();
+                }, 1000);
+            }
+            
+        } else {
+            showError('Error al seguir usuario: ' + data.message);
+            // Reset button
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error following user:', error);
+        showError('Error de conexión');
+        // Reset button
+        button.textContent = originalText;
+        button.disabled = false;
+    } finally {
+        button.disabled = false;
+    }
+}
+
+// Unfollow user
+async function unfollowUser(userId) {
+    return followUser(userId, 'unfollow');
+}
+
+// Update follower counts in UI (if displayed)
+function updateFollowerCounts(userId, followerCount, followingCount) {
+    const followerCountElement = document.getElementById(`followers-count-${userId}`);
+    const followingCountElement = document.getElementById(`following-count-${userId}`);
+    
+    if (followerCountElement) {
+        followerCountElement.textContent = followerCount;
+    }
+    
+    if (followingCountElement) {
+        followingCountElement.textContent = followingCount;
+    }
+}
+
+// Check follow status for a user (utility function)
+async function checkFollowStatus(userId) {
+    try {
+        const response = await fetch(API_BASE_URL + 'get_user_relationship.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -778,16 +865,10 @@ async function followUser(userId) {
         });
         
         const data = await response.json();
-        
-        if (data.success) {
-            showSuccess('Usuario seguido correctamente');
-            loadUserSuggestions(); // Refresh suggestions
-        } else {
-            showError('Error al seguir usuario: ' + data.message);
-        }
+        return data.success ? data.is_following : false;
     } catch (error) {
-        console.error('Error following user:', error);
-        showError('Error de conexión');
+        console.error('Error checking follow status:', error);
+        return false;
     }
 }
 
@@ -892,7 +973,7 @@ function showSearchResults(users, query) {
         const userElement = document.createElement('div');
         userElement.className = 'user-result';
         userElement.innerHTML = `
-            <img src="${user.imagen_perfil || '../../img/default-avatar.jpg'}" 
+            <img src="${user.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
                  alt="${user.nombre}" class="result-avatar">
             <div class="result-info">
                 <span class="result-name">${user.nombre} ${user.apellidos}</span>
@@ -900,9 +981,13 @@ function showSearchResults(users, query) {
                 <span class="result-stats">${user.total_actividades} actividades</span>
             </div>
             ${!user.es_amigo ? `
-                <button class="friend-action" onclick="followUser(${user.id})">Seguir</button>
+                <button class="friend-action" onclick="followUser(${user.id})" id="follow-btn-${user.id}">
+                    Seguir
+                </button>
             ` : `
-                <span class="friend-status">Amigo</span>
+                <button class="friend-action following" onclick="unfollowUser(${user.id})" id="follow-btn-${user.id}">
+                    Siguiendo
+                </button>
             `}
         `;
         resultsContainer.appendChild(userElement);
@@ -1022,3 +1107,87 @@ function createToast(message, type = 'info') {
         }, 300);
     }, 3000);
 }
+
+// Utility function to remove images from preview
+function removeImage(index) {
+    const imageInput = document.getElementById('post-images');
+    const files = Array.from(imageInput.files);
+    
+    // Create new FileList without the removed file
+    const dt = new DataTransfer();
+    files.forEach((file, i) => {
+        if (i !== index) {
+            dt.items.add(file);
+        }
+    });
+    
+    imageInput.files = dt.files;
+    handleImagePreview({ target: imageInput });
+}
+
+// Enhanced user profile functions
+function viewUserProfile(userId) {
+    // Navigate to user profile page
+    window.location.href = `../profile/user.html?id=${userId}`;
+}
+
+// Bulk follow/unfollow operations
+async function followMultipleUsers(userIds) {
+    const results = [];
+    
+    for (const userId of userIds) {
+        try {
+            const result = await followUser(userId);
+            results.push({ userId, success: true, result });
+        } catch (error) {
+            results.push({ userId, success: false, error: error.message });
+        }
+    }
+    
+    return results;
+}
+
+// Get mutual friends
+async function getMutualFriends(userId) {
+    try {
+        const response = await fetch(API_BASE_URL + 'get_mutual_friends.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: localStorage.getItem('auth_token'),
+                user_id: userId
+            })
+        });
+        
+        const data = await response.json();
+        return data.success ? data.mutual_friends : [];
+    } catch (error) {
+        console.error('Error getting mutual friends:', error);
+        return [];
+    }
+}
+
+// Initialize follow buttons based on relationship status
+async function initializeFollowButtons() {
+    const followButtons = document.querySelectorAll('.follow-btn');
+    
+    for (const button of followButtons) {
+        const userId = button.onclick?.toString().match(/followUser\((\d+)\)/)?.[1];
+        if (userId) {
+            const isFollowing = await checkFollowStatus(parseInt(userId));
+            if (isFollowing) {
+                button.textContent = 'Siguiendo';
+                button.className = 'follow-btn following';
+                button.onclick = () => unfollowUser(parseInt(userId));
+            }
+        }
+    }
+}
+
+// Call initialization when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize follow buttons after other content loads
+    setTimeout(initializeFollowButtons, 1000);
+});

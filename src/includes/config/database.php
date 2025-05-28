@@ -9,7 +9,7 @@ class Database {
     private $password = 'alvaro10';
     private $charset = 'utf8mb4';
     private $pdo;
-    
+
     // Conexión a la base de datos
     public function connect() {
         if ($this->pdo) {
@@ -23,13 +23,25 @@ class Database {
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
             ];
-            
             $this->pdo = new PDO($dsn, $this->username, $this->password, $options);
             return $this->pdo;
         } catch(PDOException $e) {
             // En un entorno de producción, registrar el error en lugar de mostrarlo
-            die("Error de conexión: " . $e->getMessage());
+            error_log("Database connection error: " . $e->getMessage());
+            throw new Exception("Database connection failed: " . $e->getMessage());
         }
     }
+}
+
+// Global function to get database connection (REQUIRED by auth_functions.php and other files)
+function get_db_connection() {
+    static $connection = null;
+    
+    if ($connection === null) {
+        $db = new Database();
+        $connection = $db->connect();
+    }
+    
+    return $connection;
 }
 ?>

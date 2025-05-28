@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Verify token with server
-    fetch('../includes/auth/check_session.php', {
+    fetch('../../includes/auth/check_session.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

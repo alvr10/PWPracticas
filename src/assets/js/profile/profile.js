@@ -386,12 +386,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Handle avatar upload (placeholder)
-  function handleAvatarUpload(e) {
+  // Handle avatar upload - UPDATED TO ACTUALLY UPLOAD
+  async function handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     
-    // For now, just show preview
+    console.log('Avatar upload started:', file.name);
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      showMessage('Tipo de archivo no válido. Solo se permiten JPEG, PNG, GIF y WebP.', 'error');
+      return;
+    }
+    
+    // Validate file size (2MB max)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      showMessage('El archivo es demasiado grande. Tamaño máximo: 2MB.', 'error');
+      return;
+    }
+    
+    // Show preview immediately
     const reader = new FileReader();
     reader.onload = function(e) {
       if (avatarPreview) {
@@ -400,18 +416,101 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     reader.readAsDataURL(file);
     
-    showMessage('Funcionalidad de subida de avatar próximamente', 'info');
+    // Disable upload button and show loading
+    if (uploadBtn) {
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
+    }
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('token', token);
+      formData.append('avatar', file);
+
+      const response = await fetch(`${API_BASE_URL}upload_avatar.php`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to upload avatar');
+      }
+      
+      // Update current user data with new avatar URL
+      if (currentUserData) {
+        currentUserData.avatar_url = data.avatar_url;
+      }
+      
+      // Update main profile avatar
+      const mainProfileAvatar = document.getElementById('profile-avatar');
+      if (mainProfileAvatar) {
+        mainProfileAvatar.src = data.avatar_url;
+      }
+      
+      showMessage('Avatar actualizado correctamente', 'success');
+      
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      showMessage('Error al subir el avatar: ' + error.message, 'error');
+      
+      // Restore original avatar on error
+      if (currentUserData && avatarPreview) {
+        avatarPreview.src = currentUserData.avatar_url;
+      }
+    } finally {
+      // Reset upload button
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir imagen';
+      }
+    }
   }
 
-  // Remove avatar (placeholder)
-  function removeAvatar() {
-    if (avatarPreview) {
-      avatarPreview.src = '../../../public/profiles/gigachad_cat.jpg';
+  // Remove avatar - UPDATED TO RESET TO DEFAULT
+  async function removeAvatar() {
+    if (!confirm('¿Estás seguro de que quieres eliminar tu avatar?')) {
+      return;
     }
+    
+    const defaultAvatar = '../../../public/profiles/gigachad_cat.jpg';
+    
+    // Update preview immediately
+    if (avatarPreview) {
+      avatarPreview.src = defaultAvatar;
+    }
+    
+    // Update main profile avatar
+    const mainProfileAvatar = document.getElementById('profile-avatar');
+    if (mainProfileAvatar) {
+      mainProfileAvatar.src = defaultAvatar;
+    }
+    
+    // Clear file input
     if (avatarUpload) {
       avatarUpload.value = '';
     }
-    showMessage('Avatar restablecido', 'info');
+    
+    // Update current user data
+    if (currentUserData) {
+      currentUserData.avatar_url = defaultAvatar;
+    }
+    
+    showMessage('Avatar restablecido al predeterminado', 'success');
+    
+    // Note: You might want to implement a server endpoint to actually remove 
+    // the avatar from the database and delete the file
   }
   
   // Funciones para el modal

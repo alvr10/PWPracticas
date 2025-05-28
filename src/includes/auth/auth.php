@@ -1,9 +1,51 @@
 <?php
 // src/includes/auth/auth.php
 
-// Incluir la configuración y la base de datos
-require_once '../config/config.php';
-require_once '../config/database.php';
+// Better path resolution that works from any directory
+$config_dir = dirname(__DIR__) . '/config/';
+
+// Try different possible paths for config files
+$config_files = [
+    $config_dir . 'config.php',
+    __DIR__ . '/../config/config.php',
+    dirname(dirname(dirname(__FILE__))) . '/includes/config/config.php'
+];
+
+$database_files = [
+    $config_dir . 'database.php',
+    __DIR__ . '/../config/database.php', 
+    dirname(dirname(dirname(__FILE__))) . '/includes/config/database.php'
+];
+
+// Include config file
+$config_loaded = false;
+foreach ($config_files as $config_file) {
+    if (file_exists($config_file)) {
+        require_once $config_file;
+        $config_loaded = true;
+        break;
+    }
+}
+
+// Include database file
+$database_loaded = false;
+foreach ($database_files as $database_file) {
+    if (file_exists($database_file)) {
+        require_once $database_file;
+        $database_loaded = true;
+        break;
+    }
+}
+
+// If files weren't found, log the error but continue (config might not be strictly necessary)
+if (!$config_loaded) {
+    error_log("Warning: config.php not found in expected locations");
+}
+
+if (!$database_loaded) {
+    error_log("Error: database.php not found in expected locations");
+    throw new Exception("Database configuration not available");
+}
 
 class Auth {
     private $db;

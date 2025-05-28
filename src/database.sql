@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS imagenes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
-    tamaño INT NOT NULL, -- en bytes
+    tamano INT NOT NULL, -- en bytes
     alto INT NOT NULL, -- en píxeles
     ancho INT NOT NULL, -- en píxeles
     ruta VARCHAR(255) NOT NULL,
