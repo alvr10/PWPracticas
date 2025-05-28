@@ -4,6 +4,10 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
+
 require_once '../config/database.php';
 
 // Handle preflight requests
@@ -113,6 +117,7 @@ try {
     // Formatear respuesta
     $response = [
         'success' => true,
+        'success' => true,
         'user' => [
             'id' => (int)$userData['id'],
             'username' => $userData['username'],
@@ -150,4 +155,3 @@ try {
         'error' => $e->getMessage()
     ]);
 }
-?>

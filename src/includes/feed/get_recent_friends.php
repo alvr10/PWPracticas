@@ -15,6 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    echo json_encode(['message' => 'Cargando amigos recientes...']);
+
     $input = json_decode(file_get_contents('php://input'), true);
     
     if (!isset($input['token'])) {

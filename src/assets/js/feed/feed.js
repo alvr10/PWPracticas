@@ -9,6 +9,8 @@ let selectedCompanions = [];
 const API_BASE_URL = 'http://localhost:8000/src/includes/feed/';
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Feed script loaded');
+
     // Get user data from localStorage
     const userData = JSON.parse(localStorage.getItem('user_data'));
     if (userData) {
