@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | RunTrackPro</title>
+    <link rel="stylesheet" href="../../assets/css/admin/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="navbar-content">
+            <a href="../social/feed.html" class="logo">RunTrackPro</a>
+            <div class="admin-indicator">
+                <i class="fas fa-shield-alt"></i>
+                Panel de Administración
+            </div>
+            <nav class="top-nav-links">
+                <a title="Inicio" href="../social/feed.html" class="nav-link"><i class="fas fa-home"></i></a>
+                <a title="Configuración" href="../settings/settings.html" class="nav-link"><i class="fas fa-cog"></i></a>
+                <a title="Admin" href="#" class="nav-link active"><i class="fas fa-shield-alt"></i></a>
+            </nav>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <h3>Administración</h3>
+            <nav class="admin-nav">
+                <a href="#" class="admin-nav-item active" data-section="auxiliary-data">
+                    <i class="fas fa-database"></i>
+                    Datos Auxiliares
+                </a>
+                <a href="#" class="admin-nav-item" data-section="users">
+                    <i class="fas fa-users"></i>
+                    Gestión de Usuarios
+                </a>
+                <a href="#" class="admin-nav-item" data-section="activities">
+                    <i class="fas fa-running"></i>
+                    Actividades e Imágenes
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Auxiliary Data Section -->
+            <section id="auxiliary-data" class="admin-section active">
+                <div class="section-header">
+                    <h2>Gestión de Datos Auxiliares</h2>
+                    <p>Administrar tipos de actividad, países, provincias y localidades</p>
+                </div>
+
+                <!-- Data Type Selector -->
+                <div class="data-type-selector">
+                    <button class="data-type-btn active" data-type="activity-types">
+                        <i class="fas fa-running"></i>
+                        Tipos de Actividad
+                    </button>
+                    <button class="data-type-btn" data-type="countries">
+                        <i class="fas fa-globe"></i>
+                        Países
+                    </button>
+                    <button class="data-type-btn" data-type="provinces">
+                        <i class="fas fa-map"></i>
+                        Provincias
+                    </button>
+                    <button class="data-type-btn" data-type="cities">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Localidades
+                    </button>
+                </div>
+
+                <!-- Activity Types Management -->
+                <div id="activity-types-content" class="data-content active">
+                    <div class="content-header">
+                        <h3>Tipos de Actividad</h3>
+                        <button class="btn btn-primary" id="add-activity-type">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Tipo
+                        </button>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table" id="activity-types-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Countries Management -->
+                <div id="countries-content" class="data-content">
+                    <div class="content-header">
+                        <h3>Países</h3>
+                        <button class="btn btn-primary" id="add-country">
+                            <i class="fas fa-plus"></i>
+                            Nuevo País
+                        </button>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table" id="countries-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Provinces Management -->
+                <div id="provinces-content" class="data-content">
+                    <div class="content-header">
+                        <h3>Provincias</h3>
+                        <button class="btn btn-primary" id="add-province">
+                            <i class="fas fa-plus"></i>
+                            Nueva Provincia
+                        </button>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table" id="provinces-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>País</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Cities Management -->
+                <div id="cities-content" class="data-content">
+                    <div class="content-header">
+                        <h3>Localidades</h3>
+                        <button class="btn btn-primary" id="add-city">
+                            <i class="fas fa-plus"></i>
+                            Nueva Localidad
+                        </button>
+                    </div>
+                    <div class="data-table-container">
+                        <table class="data-table" id="cities-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Provincia</th>
+                                    <th>País</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Management Section -->
+            <section id="users" class="admin-section">
+                <div class="section-header">
+                    <h2>Gestión de Usuarios</h2>
+                    <p>Buscar, editar y gestionar usuarios del sistema</p>
+                </div>
+
+                <!-- User Search -->
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" id="user-search" placeholder="Buscar usuarios por nombre, email o username...">
+                        <button title="search" type="button" id="search-users-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="data-table-container">
+                    <table class="data-table" id="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Avatar</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Username</th>
+                                <th>Fecha Alta</th>
+                                <th>Estado</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <button class="btn btn-secondary" id="prev-page" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                        Anterior
+                    </button>
+                    <span class="page-info">Página <span id="current-page">1</span> de <span id="total-pages">1</span></span>
+                    <button class="btn btn-secondary" id="next-page">
+                        Siguiente
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Activities Management Section -->
+            <section id="activities" class="admin-section">
+                <div class="section-header">
+                    <h2>Gestión de Actividades e Imágenes</h2>
+                    <p>Administrar actividades y moderar contenido inapropiado</p>
+                </div>
+
+                <!-- Activity Search -->
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" id="activity-search" placeholder="Buscar actividades por título o usuario...">
+                        <button title="search" type="button" id="search-activities-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="filter-options">
+                        <select title="activity" id="activity-type-filter">
+                            <option value="">Todos los tipos</option>
+                            <!-- Options will be loaded dynamically -->
+                        </select>
+                        <select title="date filter" id="date-filter">
+                            <option value="">Todas las fechas</option>
+                            <option value="today">Hoy</option>
+                            <option value="week">Esta semana</option>
+                            <option value="month">Este mes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Activities Table -->
+                <div class="data-table-container">
+                    <table class="data-table" id="activities-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Usuario</th>
+                                <th>Tipo</th>
+                                <th>Fecha Actividad</th>
+                                <th>Imágenes</th>
+                                <th>Aplausos</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Activity Pagination -->
+                <div class="pagination-container">
+                    <button class="btn btn-secondary" id="activity-prev-page" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                        Anterior
+                    </button>
+                    <span class="page-info">Página <span id="activity-current-page">1</span> de <span id="activity-total-pages">1</span></span>
+                    <button class="btn btn-secondary" id="activity-next-page">
+                        Siguiente
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="add-edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Agregar Elemento</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="add-edit-form">
+                <div id="form-fields">
+                    <!-- Form fields will be generated dynamically -->
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal-btn">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Edit Modal -->
+    <div id="user-edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Usuario</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="user-edit-form">
+                <div class="form-group">
+                    <label for="edit-user-name">Nombre</label>
+                    <input type="text" id="edit-user-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-user-lastname">Apellidos</label>
+                    <input type="text" id="edit-user-lastname" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-user-email">Email</label>
+                    <input type="email" id="edit-user-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-user-username">Username</label>
+                    <input type="text" id="edit-user-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-user-role">Rol</label>
+                    <select id="edit-user-role">
+                        <option value="1">Administrador</option>
+                        <option value="2">Usuario</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-user-status">Estado</label>
+                    <select id="edit-user-status">
+                        <option value="active">Activo</option>
+                        <option value="inactive">Inactivo</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal-btn">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Guardar Cambios
+                    </button>
+                    <button type="button" class="btn btn-danger" id="deactivate-user-btn">
+                        <i class="fas fa-user-slash"></i>
+                        Dar de Baja
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Gallery Modal -->
+    <div id="image-gallery-modal" class="modal">
+        <div class="modal-content image-gallery-content">
+            <div class="modal-header">
+                <h3>Imágenes de la Actividad</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div id="image-gallery">
+                <!-- Images will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmar Acción</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="confirmation-content">
+                <p id="confirmation-message"></p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary close-modal-btn">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" id="confirm-action-btn">
+                    <i class="fas fa-check"></i>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+    <script src="../../assets/js/admin/admin.js" type="module"></script>
+</body>
+</html>

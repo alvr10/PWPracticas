@@ -153,7 +153,7 @@ try {
             'join_date' => $userData['fecha_alta_formatted'],
             'avatar_url' => $userData['imagen_perfil'] ? 
                 '../../../public/profiles/' . $userData['imagen_perfil'] : 
-                '../../../public/profiles/gigachad_cat.jpg',
+                '../../../public/profiles/default-avatar.jpg',
             'country' => $userData['pais_id'],
             'province' => $userData['provincia_id'],
             'city' => $userData['localidad_id']

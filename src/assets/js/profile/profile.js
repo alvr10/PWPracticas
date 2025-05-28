@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('token', token);
       formData.append('avatar', file);
 
-      const response = await fetch(`${API_BASE_URL}upload_avatar.php`, {
+      const response = await fetch(`${API_BASE_URL}update_avatar.php`, {
         method: 'POST',
         body: formData
       });
@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    const defaultAvatar = '../../../public/profiles/gigachad_cat.jpg';
+    const defaultAvatar = '../../../public/profiles/default-avatar.jpg';
     
     // Update preview immediately
     if (avatarPreview) {
