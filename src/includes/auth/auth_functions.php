@@ -1,5 +1,6 @@
 <?php
-// auth_functions.php - Bridge to existing Auth class
+// src/includes/auth/auth_functions.php
+require_once __DIR__ . '../config/database.php';
 require_once __DIR__ . '/auth.php';
 
 // Initialize Auth instance
@@ -26,22 +27,16 @@ function verify_token($token) {
         $auth = getAuthInstance();
         $result = $auth->checkSession($token);
         
-        // Your checkSession returns ['valid' => true/false, 'message' => '...']
+        // Your checkSession returns ['valid' => true/false, 'user_id' => id]
         if ($result && isset($result['valid']) && $result['valid'] === true) {
             
-            // If the result contains user data, return it
-            if (isset($result['user_data'])) {
-                return $result['user_data'];
-            }
+            // Get user ID from session check result
+            $user_id = isset($result['user_id']) ? $result['user_id'] : null;
             
-            // If the result contains user info directly
-            if (isset($result['user'])) {
-                return $result['user'];
+            if ($user_id) {
+                // Get complete user data from database
+                return get_user_by_id($user_id);
             }
-            
-            // If no user data in result, decode the token manually
-            $user_data = decodeTokenAndGetUser($token);
-            return $user_data;
         }
         
         return false;
@@ -52,59 +47,15 @@ function verify_token($token) {
 }
 
 /**
- * Decode JWT token and get user data from database
- */
-function decodeTokenAndGetUser($token) {
-    try {
-        $parts = explode('.', $token);
-        if (count($parts) !== 3) {
-            return false;
-        }
-        
-        // Decode payload (second part)
-        $payload_encoded = $parts[1];
-        // Add padding if needed for base64 decoding
-        $payload_encoded .= str_repeat('=', (4 - strlen($payload_encoded) % 4) % 4);
-        $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $payload_encoded)), true);
-        
-        if (!$payload) {
-            return false;
-        }
-        
-        // Check if token is expired
-        if (isset($payload['exp']) && $payload['exp'] < time()) {
-            return false;
-        }
-        
-        // Get user ID from token payload
-        $user_id = null;
-        if (isset($payload['user_id'])) {
-            $user_id = $payload['user_id'];
-        } elseif (isset($payload['id'])) {
-            $user_id = $payload['id'];
-        } elseif (isset($payload['sub'])) {
-            $user_id = $payload['sub'];
-        }
-        
-        if (!$user_id) {
-            return false;
-        }
-        
-        // Get complete user data from database
-        return get_user_by_id($user_id);
-        
-    } catch (Exception $e) {
-        error_log("Token decode error: " . $e->getMessage());
-        return false;
-    }
-}
-
-/**
  * Get user data by ID from database
  */
 function get_user_by_id($user_id) {
     try {
         $pdo = get_db_connection();
+        
+        if (!$pdo) {
+            throw new Exception("Database connection failed");
+        }
         
         $sql = "
             SELECT 
@@ -119,6 +70,7 @@ function get_user_by_id($user_id) {
                 u.imagen_perfil_id,
                 u.fecha_alta,
                 u.validado,
+                u.rol_id,
                 l.nombre as localidad_nombre,
                 p.nombre as provincia_nombre,
                 pa.nombre as pais_nombre,
@@ -139,15 +91,13 @@ function get_user_by_id($user_id) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($user) {
-            // Convert boolean fields
+            // Convert boolean and numeric fields
             $user['validado'] = (bool)$user['validado'];
-            // Convert numeric fields
             $user['id'] = (int)$user['id'];
-            $user['actividad_preferida_id'] = (int)$user['actividad_preferida_id'];
-            $user['localidad_id'] = (int)$user['localidad_id'];
-            if ($user['imagen_perfil_id']) {
-                $user['imagen_perfil_id'] = (int)$user['imagen_perfil_id'];
-            }
+            $user['actividad_preferida_id'] = $user['actividad_preferida_id'] ? (int)$user['actividad_preferida_id'] : null;
+            $user['localidad_id'] = $user['localidad_id'] ? (int)$user['localidad_id'] : null;
+            $user['imagen_perfil_id'] = $user['imagen_perfil_id'] ? (int)$user['imagen_perfil_id'] : null;
+            $user['rol_id'] = $user['rol_id'] ? (int)$user['rol_id'] : null;
         }
         
         return $user;
@@ -159,15 +109,14 @@ function get_user_by_id($user_id) {
 }
 
 /**
- * Main authentication function that should be used in feed files
- * This combines token verification with database user lookup
+ * Main authentication function that should be used in profile files
  */
 function authenticate_user($token) {
     if (!$token) {
         return false;
     }
     
-    // First verify the token using your existing Auth class
+    // Verify the token using your existing Auth class
     $auth = getAuthInstance();
     $session_check = $auth->checkSession($token);
     
@@ -175,61 +124,15 @@ function authenticate_user($token) {
         return false;
     }
     
-    // Now get the complete user data
-    $user_data = decodeTokenAndGetUser($token);
+    // Get the user ID from session check
+    $user_id = isset($session_check['user_id']) ? $session_check['user_id'] : null;
     
-    if (!$user_data) {
+    if (!$user_id) {
         return false;
     }
     
-    return $user_data;
-}
-
-/**
- * Generate a JWT token for a user using existing Auth class
- */
-function generate_token($user_data) {
-    try {
-        $auth = getAuthInstance();
-        
-        // Check if your Auth class has a generateToken method
-        if (method_exists($auth, 'generateToken')) {
-            return $auth->generateToken($user_data);
-        }
-        
-        // Check for other common method names
-        if (method_exists($auth, 'createToken')) {
-            return $auth->createToken($user_data);
-        }
-        
-        if (method_exists($auth, 'createAuthToken')) {
-            return $auth->createAuthToken($user_data);
-        }
-        
-        // If no specific method exists, return false
-        // Your existing auth system should handle token creation
-        return false;
-        
-    } catch (Exception $e) {
-        error_log("Token generation error: " . $e->getMessage());
-        return false;
-    }
-}
-
-/**
- * Register a new user using existing Auth class
- */
-function register_user($user_data) {
-    try {
-        $auth = getAuthInstance();
-        return $auth->register($user_data);
-    } catch (Exception $e) {
-        error_log("User registration error: " . $e->getMessage());
-        return [
-            'success' => false,
-            'message' => 'Registration failed: ' . $e->getMessage()
-        ];
-    }
+    // Get complete user data
+    return get_user_by_id($user_id);
 }
 
 /**
@@ -271,6 +174,9 @@ function check_permission($user, $action, $resource_id = null) {
             }
             return false;
             
+        case 'edit_profile':
+            return true; // Users can edit their own profile
+            
         case 'view_profile':
         case 'search_users':
         case 'view_feed':
@@ -288,21 +194,7 @@ function check_permission($user, $action, $resource_id = null) {
 }
 
 /**
- * Validate token format (basic check)
- */
-function is_valid_token_format($token) {
-    if (!$token || !is_string($token)) {
-        return false;
-    }
-    
-    // Check if it looks like a JWT (3 parts separated by dots)
-    $parts = explode('.', $token);
-    return count($parts) === 3;
-}
-
-/**
  * Get current user from token (shorthand function)
- * Note: renamed to avoid conflict with PHP's built-in get_current_user()
  */
 function get_authenticated_user($token) {
     return authenticate_user($token);
@@ -319,5 +211,4 @@ function can_access_resource($token, $action, $resource_id = null) {
     
     return check_permission($user, $action, $resource_id);
 }
-?>
 ?>

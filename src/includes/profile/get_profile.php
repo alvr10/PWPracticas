@@ -1,8 +1,13 @@
 <?php
+// src/includes/profile/get_profile.php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
+
+// Debug mode - remove in production
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 require_once '../config/database.php';
 require_once '../auth/auth_functions.php';
@@ -21,6 +26,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 try {
     $input = json_decode(file_get_contents('php://input'), true);
     
+    if (!$input) {
+        throw new Exception('Invalid JSON input');
+    }
+    
     if (!isset($input['token'])) {
         throw new Exception('Token is required');
     }
@@ -30,13 +39,22 @@ try {
     // Verify authentication using auth_functions
     $user = verify_token($token);
     if (!$user) {
-        throw new Exception('Invalid or expired token');
+        http_response_code(401);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Invalid or expired token'
+        ]);
+        exit;
     }
     
     $userId = $user['id'];
     $pdo = get_db_connection();
 
-    // Obtener datos básicos del usuario
+    if (!$pdo) {
+        throw new Exception('Database connection failed');
+    }
+
+    // Get basic user data with location information
     $stmt = $pdo->prepare("
         SELECT 
             u.id, u.username, u.email, u.nombre, u.apellidos, 
@@ -63,11 +81,14 @@ try {
 
     if (!$userData) {
         http_response_code(404);
-        echo json_encode(['error' => 'Usuario no encontrado']);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Usuario no encontrado'
+        ]);
         exit;
     }
 
-    // Obtener estadísticas del usuario
+    // Get user statistics
     $statsStmt = $pdo->prepare("
         SELECT 
             COUNT(DISTINCT a.id) as total_actividades,
@@ -78,15 +99,22 @@ try {
                     ELSE 0 
                 END
             ), 0) as total_distancia,
-            (SELECT COUNT(*) FROM amigos WHERE usuario_id = ? OR amigo_id = ?) as total_amigos,
-            (SELECT COUNT(*) FROM actividad_aplausos aa JOIN actividades act ON aa.actividad_id = act.id WHERE act.usuario_id = ?) as total_aplausos
+            (SELECT COUNT(*) 
+             FROM amigos 
+             WHERE (usuario_id = ? OR amigo_id = ?)
+            ) as total_amigos,
+            (SELECT COUNT(*) 
+             FROM actividad_aplausos aa 
+             JOIN actividades act ON aa.actividad_id = act.id 
+             WHERE act.usuario_id = ?
+            ) as total_aplausos
         FROM actividades a
         WHERE a.usuario_id = ?
     ");
     $statsStmt->execute([$userId, $userId, $userId, $userId]);
     $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
 
-    // Obtener actividades recientes (últimas 3)
+    // Get recent activities (last 3)
     $activitiesStmt = $pdo->prepare("
         SELECT 
             a.id, a.titulo, ta.nombre as tipo_actividad, 
@@ -101,7 +129,7 @@ try {
     $activitiesStmt->execute([$userId]);
     $activities = $activitiesStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Formatear ubicación
+    // Format location
     $location_parts = array_filter([
         $userData['localidad_nombre'],
         $userData['provincia_nombre'],
@@ -109,7 +137,7 @@ try {
     ]);
     $location = implode(', ', $location_parts);
 
-    // Formatear respuesta
+    // Format response
     $response = [
         'success' => true,
         'user' => [
@@ -136,14 +164,14 @@ try {
             'total_amigos' => (int)$stats['total_amigos'],
             'total_aplausos' => (int)$stats['total_aplausos']
         ],
-        'activities' => $activities
+        'activities' => $activities ?: []
     ];
 
     echo json_encode($response);
 
 } catch (Exception $e) {
     error_log("Get profile error: " . $e->getMessage());
-    http_response_code(400);
+    http_response_code(500);
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
