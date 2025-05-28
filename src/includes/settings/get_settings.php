@@ -1,5 +1,5 @@
 <?php
-// src/includes/settings/get_settings.php - UPDATED VERSION
+// src/includes/settings/get_settings.php
 header('Content-Type: application/json');
 require_once '../config/database.php';
 require_once '../auth/auth_functions.php';
@@ -28,9 +28,7 @@ try {
     $stmt = $pdo->prepare("
         SELECT 
             u.id, u.username, u.email, u.nombre, u.apellidos, u.rol_id,
-            u.perfil_publico, u.compartir_ubicacion, 
-            u.notif_aplausos, u.notif_comentarios, u.notif_amistades, u.notif_logros, u.notif_email,
-            i.ruta as imagen_perfil,
+            i.nombre as imagen_perfil,
             r.nombre as rol_nombre
         FROM usuarios u
         LEFT JOIN imagenes i ON u.imagen_perfil_id = i.id
@@ -41,13 +39,13 @@ try {
     $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$settings) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Usuario no encontrado']);
-        exit;
+        throw new Exception('Usuario no encontrado');
     }
 
-    // Obtener configuración de modo oscuro si existe
-    $darkMode = isset($_COOKIE['darkMode']) ? $_COOKIE['darkMode'] === 'true' : false;
+    // Set avatar URL
+    $avatar_url = $settings['imagen_perfil'] ? 
+        '../../../public/profiles/' . $settings['imagen_perfil'] : 
+        '../../../public/profiles/default-avatar.jpg';
 
     echo json_encode([
         'success' => true,
@@ -60,23 +58,13 @@ try {
             'role' => $settings['rol_nombre'],
             'role_id' => (int)$settings['rol_id'],
             'is_admin' => (int)$settings['rol_id'] === 1,
-            'avatar' => $settings['imagen_perfil'] ? '../../../' . $settings['imagen_perfil'] : '../../../public/profiles/default-avatar.jpg'
-        ],
-        'settings' => [
-            'public_profile' => (bool)$settings['perfil_publico'],
-            'share_location' => (bool)$settings['compartir_ubicacion'],
-            'applause_notif' => (bool)$settings['notif_aplausos'],
-            'comments_notif' => (bool)$settings['notif_comentarios'],
-            'friends_notif' => (bool)$settings['notif_amistades'],
-            'achievements_notif' => (bool)$settings['notif_logros'],
-            'email_notif' => (bool)$settings['notif_email'],
-            'dark_mode' => $darkMode
+            'avatar' => $avatar_url
         ]
     ]);
 
 } catch (Exception $e) {
     error_log("Get settings error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]);
+    echo json_encode(['error' => $e->getMessage()]);
 }
 ?>

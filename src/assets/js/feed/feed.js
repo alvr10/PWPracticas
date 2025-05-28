@@ -21,9 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize feed
     loadFeedActivities();
     loadUserStats();
-    loadRecentFriends();
-    loadTrendingActivities();
-    loadUserSuggestions();
+    loadFriendsList();
     
     // Set up event listeners
     setupEventListeners();
@@ -144,123 +142,96 @@ async function loadUserStats() {
     }
 }
 
-// Load recent friends
-async function loadRecentFriends() {
+// Load friends list with pagination
+async function loadFriendsList(offset = 0) {
     try {
-        const response = await fetch(API_BASE_URL + 'get_recent_friends.php', {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+
+        const response = await fetch(`${API_BASE_URL}get_friends_list.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                token: localStorage.getItem('auth_token')
+            body: JSON.stringify({ 
+                token: token,
+                offset: offset,
+                limit: 10
             })
         });
-        
+
+        if (!response.ok) {
+            throw new Error('Error al cargar amigos');
+        }
+
         const data = await response.json();
         
         if (data.success) {
-            const container = document.getElementById('recent-friends');
-            container.innerHTML = '';
+            const friendsList = document.getElementById('friends-list');
+            const loadMoreBtn = document.getElementById('load-more-friends');
+            const loadMoreFriendsBtn = document.getElementById('load-more-friends-btn');
             
-            data.friends.forEach(friend => {
-                const friendElement = document.createElement('div');
-                friendElement.className = 'friend-item';
-                friendElement.innerHTML = `
-                    <img src="${friend.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
-                         alt="${friend.nombre}" class="friend-avatar">
-                    <div class="friend-info">
-                        <div class="friend-name">${friend.nombre} ${friend.apellidos}</div>
-                        <div class="friend-status">${friend.ultima_actividad || 'Sin actividad reciente'}</div>
-                    </div>
-                `;
-                container.appendChild(friendElement);
-            });
+            if (offset === 0) {
+                friendsList.innerHTML = '';
+            }
+            
+            if (data.friends && data.friends.length > 0) {
+                data.friends.forEach(friend => {
+                    const friendElement = document.createElement('div');
+                    friendElement.className = 'friend-item';
+                    friendElement.innerHTML = `
+                        <div class="friend-avatar">
+                            <img src="${friend.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
+                                 alt="${friend.nombre}">
+                        </div>
+                        <div class="friend-info">
+                            <div class="friend-name">${friend.nombre} ${friend.apellidos}</div>
+                            <div class="friend-username">@${friend.username}</div>
+                            <div class="friend-status">${friend.ultima_actividad || 'Sin actividad reciente'}</div>
+                        </div>
+                        <div class="friend-actions">
+                            <button type="button" class="btn btn-icon" onclick="viewProfile(${friend.id})" title="Ver perfil">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    `;
+                    friendsList.appendChild(friendElement);
+                });
+                
+                // Show/hide load more button
+                if (data.has_more) {
+                    loadMoreBtn.style.display = 'block';
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+                
+                // Add event listener for load more button
+                if (loadMoreFriendsBtn && !loadMoreFriendsBtn.hasAttribute('data-listener')) {
+                    loadMoreFriendsBtn.setAttribute('data-listener', 'true');
+                    loadMoreFriendsBtn.addEventListener('click', () => {
+                        const currentItems = friendsList.querySelectorAll('.friend-item').length;
+                        loadFriendsList(currentItems);
+                    });
+                }
+            } else if (offset === 0) {
+                friendsList.innerHTML = '<div class="no-friends">No tienes amigos agregados aún</div>';
+                loadMoreBtn.style.display = 'none';
+            }
         }
     } catch (error) {
-        console.error('Error loading recent friends:', error);
+        console.error('Error loading friends:', error);
+        if (offset === 0) {
+            const friendsList = document.getElementById('friends-list');
+            if (friendsList) {
+                friendsList.innerHTML = '<div class="error-message">Error al cargar amigos</div>';
+            }
+        }
     }
 }
 
-// Load trending activities
-async function loadTrendingActivities() {
-    try {
-        const response = await fetch(API_BASE_URL + 'get_trending_activities.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                token: localStorage.getItem('auth_token')
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const container = document.getElementById('trending-activities');
-            container.innerHTML = '';
-            
-            data.trending.forEach(activity => {
-                const typeInfo = getActivityTypeInfo(activity.tipo_id);
-                const trendingElement = document.createElement('div');
-                trendingElement.className = 'trending-item';
-                trendingElement.innerHTML = `
-                    <div class="trending-icon">
-                        <i class="${typeInfo.icon}"></i>
-                    </div>
-                    <div class="trending-info">
-                        <div class="trending-name">${activity.tipo_nombre}</div>
-                        <div class="trending-count">${activity.count} actividades hoy</div>
-                    </div>
-                `;
-                container.appendChild(trendingElement);
-            });
-        }
-    } catch (error) {
-        console.error('Error loading trending activities:', error);
-    }
-}
-
-// Load user suggestions
-async function loadUserSuggestions() {
-    try {
-        const response = await fetch(API_BASE_URL + 'get_user_suggestions.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                token: localStorage.getItem('auth_token')
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const container = document.getElementById('user-suggestions');
-            container.innerHTML = '';
-            
-            data.suggestions.forEach(user => {
-                const suggestionElement = document.createElement('div');
-                suggestionElement.className = 'suggestion-item';
-                suggestionElement.innerHTML = `
-                    <img src="${user.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
-                         alt="${user.nombre}" class="suggestion-avatar">
-                    <div class="suggestion-info">
-                        <div class="suggestion-name">${user.nombre} ${user.apellidos}</div>
-                        <div class="suggestion-meta">${user.ubicacion || 'Ubicación no disponible'}</div>
-                    </div>
-                    <button class="follow-btn" onclick="followUser(${user.id})" id="follow-btn-${user.id}">
-                        Seguir
-                    </button>
-                `;
-                container.appendChild(suggestionElement);
-            });
-        }
-    } catch (error) {
-        console.error('Error loading user suggestions:', error);
-    }
+// Helper function to view user profile
+function viewProfile(userId) {
+    window.location.href = `../profile/friend-profile.html?user_id=${userId}`;
 }
 
 // Load feed activities from server
@@ -341,6 +312,7 @@ function renderFeedActivities(append = false) {
 }
 
 // Create HTML element for a single activity
+// Replace the existing createActivityElement function with this enhanced version
 function createActivityElement(activity) {
     const activityDiv = document.createElement('article');
     activityDiv.className = 'post';
@@ -352,8 +324,8 @@ function createActivityElement(activity) {
     // Format time ago
     const timeAgo = formatTimeAgo(activity.fecha_publicacion);
     
-    // Parse GPX data for stats
-    const stats = parseGPXStats(activity.ruta_gpx);
+    // Check if activity has GPX data
+    const hasGpx = activity.ruta_gpx && activity.ruta_gpx.trim() !== '';
     
     // Check if current user has applauded
     const hasApplauded = activity.user_applauded || false;
@@ -362,7 +334,7 @@ function createActivityElement(activity) {
     activityDiv.innerHTML = `
         <div class="post-header">
             <div class="user-info">
-                <img src="${activity.usuario_imagen || '../../../public/profiles/senior_cat.jpeg'}" 
+                <img src="${activity.usuario_imagen || '../../../public/profiles/default-avatar.jpg'}" 
                      alt="${activity.usuario_nombre}" 
                      class="user-avatar">
                 <span class="username">${activity.usuario_nombre} ${activity.usuario_apellidos}</span>
@@ -380,6 +352,21 @@ function createActivityElement(activity) {
                         <h3 class="activity-title">${activity.titulo}</h3>
                     </div>
                 </div>
+                
+                ${hasGpx ? `
+                    <div class="activity-route">
+                        <div class="route-header">
+                            <i class="fas fa-route"></i>
+                            <span>Ruta GPS disponible</span>
+                            <button class="view-route-btn" onclick="viewRoute(${activity.id})">
+                                Ver ruta
+                            </button>
+                        </div>
+                        <div id="route-preview-${activity.id}" class="route-preview" style="display: none;">
+                            <canvas id="route-canvas-${activity.id}" width="100%" height="200"></canvas>
+                        </div>
+                    </div>
+                ` : ''}
                 
                 ${activity.imagenes && activity.imagenes.length > 0 ? `
                     <div class="activity-images">
@@ -1179,6 +1166,248 @@ async function initializeFollowButtons() {
         }
     }
 }
+
+
+// Function to render activity with GPX support
+function renderActivity(activity) {
+  const activityCard = document.createElement('div');
+  activityCard.className = 'activity-card';
+  activityCard.setAttribute('data-activity-id', activity.id);
+  
+  // Activity header
+  const activityHeader = `
+    <div class="activity-header">
+      <div class="user-info">
+        <img src="${activity.usuario_imagen || '../../../public/profiles/default-avatar.jpg'}" 
+             alt="${activity.usuario_nombre}" class="user-avatar">
+        <div class="user-details">
+          <span class="username">${activity.usuario_nombre} ${activity.usuario_apellidos}</span>
+          <span class="activity-time">${formatDate(activity.fecha_actividad)}</span>
+        </div>
+      </div>
+      <div class="activity-type">
+        <i class="fas ${getActivityIcon(activity.tipo_actividad_id)}"></i>
+        <span>${activity.tipo_actividad_nombre}</span>
+      </div>
+    </div>
+  `;
+  
+  // Activity content with GPX
+  const activityContent = `
+    <div class="activity-content">
+      <h3 class="activity-title">${activity.titulo}</h3>
+      
+      ${activity.has_gpx ? `
+        <div class="activity-route">
+          <div class="route-header">
+            <i class="fas fa-route"></i>
+            <span>Ruta GPS disponible</span>
+            <button class="view-route-btn" onclick="viewRoute('${activity.gpx_url}', ${activity.id})">
+              Ver ruta
+            </button>
+          </div>
+          <div id="route-preview-${activity.id}" class="route-preview" style="display: none;">
+            <canvas id="route-canvas-${activity.id}" width="100%" height="200"></canvas>
+          </div>
+        </div>
+      ` : ''}
+      
+      ${activity.imagenes.length > 0 ? `
+        <div class="activity-images">
+          ${activity.imagenes.map(img => `
+            <img src="${img.ruta}" alt="Imagen de actividad" 
+                 class="activity-image" onclick="openImageModal('${img.ruta}')">
+          `).join('')}
+        </div>
+      ` : ''}
+      
+      ${activity.companeros.length > 0 ? `
+        <div class="activity-companions">
+          <span>Con: ${activity.companeros.map(c => c.nombre).join(', ')}</span>
+        </div>
+      ` : ''}
+    </div>
+  `;
+  
+  // Activity actions
+  const activityActions = `
+    <div class="activity-actions">
+      <button class="action-btn applause-btn ${activity.user_applauded ? 'active' : ''}" 
+              onclick="toggleApplause(${activity.id})">
+        <i class="fas fa-thumbs-up"></i>
+        <span class="applause-count">${activity.aplausos_count}</span>
+      </button>
+      <button class="action-btn comment-btn" onclick="openComments(${activity.id})">
+        <i class="fas fa-comment"></i>
+        Comentar
+      </button>
+      <button class="action-btn share-btn" onclick="shareActivity(${activity.id})">
+        <i class="fas fa-share"></i>
+        Compartir
+      </button>
+    </div>
+  `;
+  
+  activityCard.innerHTML = activityHeader + activityContent + activityActions;
+  return activityCard;
+}
+
+// Function to view route
+async function viewRoute(gpxUrl, activityId) {
+  const routePreview = document.getElementById(`route-preview-${activityId}`);
+  if (!routePreview) return;
+  
+  try {
+    // Toggle visibility
+    if (routePreview.style.display === 'none') {
+      routePreview.style.display = 'block';
+      
+      // Load and display GPX
+      const response = await fetch(gpxUrl);
+      const gpxContent = await response.text();
+      
+      const coordinates = parseGpxCoordinates(gpxContent);
+      if (coordinates.length > 0) {
+        drawRouteOnCanvas(`route-canvas-${activityId}`, coordinates);
+      }
+      
+      // Update button text
+      const btn = document.querySelector(`[onclick="viewRoute('${gpxUrl}', ${activityId})"]`);
+      if (btn) btn.textContent = 'Ocultar ruta';
+      
+    } else {
+      routePreview.style.display = 'none';
+      
+      // Update button text
+      const btn = document.querySelector(`[onclick="viewRoute('${gpxUrl}', ${activityId})"]`);
+      if (btn) btn.textContent = 'Ver ruta';
+    }
+    
+  } catch (error) {
+    console.error('Error loading GPX:', error);
+    showMessage('Error al cargar la ruta GPS', 'error');
+  }
+}
+
+// Parse GPX coordinates (reuse from post.js)
+function parseGpxCoordinates(gpxContent) {
+  const coordinates = [];
+  const trkptRegex = /<trkpt[^>]*lat="([^"]*)"[^>]*lon="([^"]*)"/g;
+  let match;
+  
+  while ((match = trkptRegex.exec(gpxContent)) !== null) {
+    const lat = parseFloat(match[1]);
+    const lon = parseFloat(match[2]);
+    
+    if (!isNaN(lat) && !isNaN(lon)) {
+      coordinates.push({ lat: lat, lon: lon });
+    }
+  }
+  
+  return coordinates;
+}
+
+// Draw route on canvas (reuse from post.js)
+function drawRouteOnCanvas(canvasId, coordinates) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || coordinates.length < 2) return;
+  
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const width = rect.width;
+  const height = 200;
+  
+  // Set canvas size
+  canvas.width = width;
+  canvas.height = height;
+  
+  // Find bounds
+  let minLat = coordinates[0].lat, maxLat = coordinates[0].lat;
+  let minLon = coordinates[0].lon, maxLon = coordinates[0].lon;
+  
+  coordinates.forEach(coord => {
+    minLat = Math.min(minLat, coord.lat);
+    maxLat = Math.max(maxLat, coord.lat);
+    minLon = Math.min(minLon, coord.lon);
+    maxLon = Math.max(maxLon, coord.lon);
+  });
+  
+  const padding = 20;
+  const latRange = maxLat - minLat || 0.001;
+  const lonRange = maxLon - minLon || 0.001;
+  
+  // Clear and draw background
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#f8f9fa';
+  ctx.fillRect(0, 0, width, height);
+  
+  // Draw route
+  ctx.strokeStyle = '#007bff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  
+  coordinates.forEach((coord, index) => {
+    const x = padding + ((coord.lon - minLon) / lonRange) * (width - 2 * padding);
+    const y = height - padding - ((coord.lat - minLat) / latRange) * (height - 2 * padding);
+    
+    if (index === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  });
+  
+  ctx.stroke();
+  
+  // Draw start point (green)
+  const startX = padding + ((coordinates[0].lon - minLon) / lonRange) * (width - 2 * padding);
+  const startY = height - padding - ((coordinates[0].lat - minLat) / latRange) * (height - 2 * padding);
+  ctx.fillStyle = '#28a745';
+  ctx.beginPath();
+  ctx.arc(startX, startY, 4, 0, 2 * Math.PI);
+  ctx.fill();
+  
+  // Draw end point (red)
+  const endCoord = coordinates[coordinates.length - 1];
+  const endX = padding + ((endCoord.lon - minLon) / lonRange) * (width - 2 * padding);
+  const endY = height - padding - ((endCoord.lat - minLat) / latRange) * (height - 2 * padding);
+  ctx.fillStyle = '#dc3545';
+  ctx.beginPath();
+  ctx.arc(endX, endY, 4, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+// Helper function to get activity icon
+function getActivityIcon(typeId) {
+  const icons = {
+    1: 'fa-bicycle',      // Ciclismo en ruta
+    2: 'fa-mountain',     // Ciclismo MTB  
+    3: 'fa-hiking',       // Senderismo
+    4: 'fa-running'       // Carrera
+  };
+  return icons[typeId] || 'fa-running';
+}
+
+// Helper function to format date
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffHours < 1) return 'Hace unos minutos';
+  if (diffHours < 24) return `Hace ${diffHours}h`;
+  if (diffDays < 7) return `Hace ${diffDays} días`;
+  
+  return date.toLocaleDateString('es-ES', { 
+    day: 'numeric', 
+    month: 'short' 
+  });
+}
+
+// Make viewRoute function global
+window.viewRoute = viewRoute;
 
 // Call initialization when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {

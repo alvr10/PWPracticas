@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Manejar subida de GPX
-  async function handleGpxUpload(e) {
+  function handleGpxUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     
@@ -188,11 +188,176 @@ document.addEventListener('DOMContentLoaded', function() {
     // Store the file for later upload
     gpxFile = file;
     
+    // Show GPX preview
+    showGpxPreview(file);
+    
     if (fileInfo) fileInfo.textContent = `Archivo seleccionado: ${file.name}`;
     
     console.log('GPX file selected successfully');
   }
-  
+
+  // Show GPX preview on map
+  function showGpxPreview(file) {
+    const mapPreview = document.getElementById('map-preview');
+    if (!mapPreview) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const gpxContent = e.target.result;
+      
+      // Parse GPX coordinates (simple extraction)
+      const coordinates = parseGpxCoordinates(gpxContent);
+      
+      if (coordinates.length > 0) {
+        // Create simple map preview
+        mapPreview.innerHTML = `
+          <div class="gpx-preview-info">
+            <i class="fas fa-route"></i>
+            <div class="route-info">
+              <h4>Ruta GPX cargada</h4>
+              <p>${coordinates.length} puntos de ruta</p>
+              <p>Distancia aprox: ${calculateDistance(coordinates).toFixed(1)} km</p>
+            </div>
+          </div>
+          <div class="gpx-preview-map">
+            <canvas id="route-canvas" width="400" height="200"></canvas>
+          </div>
+        `;
+        
+        // Draw simple route visualization
+        drawSimpleRoute(coordinates);
+      } else {
+        mapPreview.innerHTML = `
+          <div class="gpx-preview-info">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="route-info">
+              <h4>Archivo GPX procesado</h4>
+              <p>No se pudieron extraer coordenadas para vista previa</p>
+            </div>
+          </div>
+        `;
+      }
+    };
+    
+    reader.readAsText(file);
+  }
+
+  // Simple GPX coordinate parser
+  function parseGpxCoordinates(gpxContent) {
+    const coordinates = [];
+    
+    // Simple regex to extract lat/lon from GPX
+    const trkptRegex = /<trkpt[^>]*lat="([^"]*)"[^>]*lon="([^"]*)"/g;
+    let match;
+    
+    while ((match = trkptRegex.exec(gpxContent)) !== null) {
+      const lat = parseFloat(match[1]);
+      const lon = parseFloat(match[2]);
+      
+      if (!isNaN(lat) && !isNaN(lon)) {
+        coordinates.push({ lat: lat, lon: lon });
+      }
+    }
+    
+    return coordinates;
+  }
+
+  // Calculate approximate distance
+  function calculateDistance(coordinates) {
+    if (coordinates.length < 2) return 0;
+    
+    let totalDistance = 0;
+    
+    for (let i = 1; i < coordinates.length; i++) {
+      const prev = coordinates[i - 1];
+      const curr = coordinates[i];
+      
+      // Haversine formula for distance between two points
+      const R = 6371; // Earth's radius in km
+      const dLat = (curr.lat - prev.lat) * Math.PI / 180;
+      const dLon = (curr.lon - prev.lon) * Math.PI / 180;
+      
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(prev.lat * Math.PI / 180) * Math.cos(curr.lat * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const distance = R * c;
+      
+      totalDistance += distance;
+    }
+    
+    return totalDistance;
+  }
+
+  // Draw simple route on canvas
+  function drawSimpleRoute(coordinates) {
+    const canvas = document.getElementById('route-canvas');
+    if (!canvas || coordinates.length < 2) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Find bounds
+    let minLat = coordinates[0].lat, maxLat = coordinates[0].lat;
+    let minLon = coordinates[0].lon, maxLon = coordinates[0].lon;
+    
+    coordinates.forEach(coord => {
+      minLat = Math.min(minLat, coord.lat);
+      maxLat = Math.max(maxLat, coord.lat);
+      minLon = Math.min(minLon, coord.lon);
+      maxLon = Math.max(maxLon, coord.lon);
+    });
+    
+    // Add padding
+    const padding = 20;
+    const latRange = maxLat - minLat;
+    const lonRange = maxLon - minLon;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw background
+    ctx.fillStyle = '#f0f8ff';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw route
+    ctx.strokeStyle = '#2196f3';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    
+    coordinates.forEach((coord, index) => {
+      const x = padding + ((coord.lon - minLon) / lonRange) * (width - 2 * padding);
+      const y = height - padding - ((coord.lat - minLat) / latRange) * (height - 2 * padding);
+      
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    
+    ctx.stroke();
+    
+    // Draw start point
+    const startX = padding + ((coordinates[0].lon - minLon) / lonRange) * (width - 2 * padding);
+    const startY = height - padding - ((coordinates[0].lat - minLat) / latRange) * (height - 2 * padding);
+    ctx.fillStyle = '#4caf50';
+    ctx.beginPath();
+    ctx.arc(startX, startY, 6, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Draw end point
+    const endCoord = coordinates[coordinates.length - 1];
+    const endX = padding + ((endCoord.lon - minLon) / lonRange) * (width - 2 * padding);
+    const endY = height - padding - ((endCoord.lat - minLat) / latRange) * (height - 2 * padding);
+    ctx.fillStyle = '#f44336';
+    ctx.beginPath();
+    ctx.arc(endX, endY, 6, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+    
   // Manejar subida de imágenes
   function handleImageUpload(e) {
     const files = e.target.files;
@@ -323,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('Sending request to create activity...');
       
       // FIXED: Use create_activity.php (which exists in feed directory)
-      const response = await fetch(`${API_BASE_URL}create_activity_debug.php`, {
+      const response = await fetch(`${API_BASE_URL}create_activity.php`, {
         method: 'POST',
         body: formData
       });

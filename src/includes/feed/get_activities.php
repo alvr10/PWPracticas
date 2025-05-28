@@ -1,5 +1,5 @@
 <?php
-// get_activities.php - Fetch activities for the feed
+// src/includes/feed/get_activities.php - WITH GPX SUPPORT
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
@@ -8,11 +8,6 @@ header('Access-Control-Allow-Headers: Content-Type');
 require_once '../config/database.php';
 require_once '../auth/auth_functions.php';
 
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
@@ -20,19 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Get JSON input
     $input = json_decode(file_get_contents('php://input'), true);
     
-    if (!$input) {
-        throw new Exception('Invalid JSON input');
-    }
-    
-    // Validate required fields
     if (!isset($input['token'])) {
         throw new Exception('Token is required');
     }
     
-    // Verify authentication
     $user = verify_token($input['token']);
     if (!$user) {
         throw new Exception('Invalid or expired token');
@@ -42,10 +30,9 @@ try {
     $last_id = isset($input['last_id']) ? (int)$input['last_id'] : 0;
     $limit = isset($input['limit']) ? min((int)$input['limit'], 50) : 10;
     
-    // Create database connection
     $pdo = get_db_connection();
     
-    // Build the query to get activities from friends and own activities
+    // Get activities with GPX info
     $sql = "
         SELECT DISTINCT
             a.id,
@@ -115,6 +102,25 @@ try {
         $comp_stmt->bindParam(':activity_id', $activity_id, PDO::PARAM_INT);
         $comp_stmt->execute();
         $activity['companeros'] = $comp_stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Process GPX data
+        if (!empty($activity['ruta_gpx'])) {
+            // Check if it's a file path or content
+            if (strpos($activity['ruta_gpx'], 'public/gpx/') === 0) {
+                // It's a file path - convert to web accessible URL
+                $activity['gpx_url'] = '../../' . $activity['ruta_gpx'];
+                $activity['has_gpx'] = true;
+            } else if (strpos($activity['ruta_gpx'], '<?xml') !== false) {
+                // It's GPX content - we could save it to a temporary file or parse it
+                $activity['has_gpx'] = true;
+                $activity['gpx_content'] = $activity['ruta_gpx'];
+            }
+        } else {
+            $activity['has_gpx'] = false;
+        }
+        
+        // Don't send full GPX content to frontend (too large)
+        unset($activity['ruta_gpx']);
         
         // Convert boolean values
         $activity['user_applauded'] = (bool)$activity['user_applauded'];

@@ -47,17 +47,19 @@
                         <span class="stat-label">Actividades</span>
                         <span class="stat-value" id="total-activities">0</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Amigos activos</span>
-                        <span class="stat-value" id="active-friends">0</span>
-                    </div>
                 </div>
             </div>
 
             <div class="sidebar-section">
-                <h3 class="sidebar-title">Amigos recientes</h3>
-                <div class="recent-friends" id="recent-friends">
-                    <!-- Recent friends will be loaded here -->
+                <h3 class="sidebar-title">Mis Amigos</h3>
+                <div class="friends-list" id="friends-list">
+                    <!-- Friends will be loaded here -->
+                </div>
+                <div class="load-more-friends" id="load-more-friends" style="display: none;">
+                    <button type="button" id="load-more-friends-btn" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i>
+                        Ver más amigos
+                    </button>
                 </div>
             </div>
         </aside>
@@ -87,23 +89,6 @@
                 <button type="button" id="load-more-btn">Cargar más actividades</button>
             </div>
         </main>
-
-        <!-- Right Sidebar -->
-        <aside class="right-sidebar">
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Actividades populares</h3>
-                <div class="trending-activities" id="trending-activities">
-                    <!-- Trending activities will be loaded here -->
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Sugerencias</h3>
-                <div class="user-suggestions" id="user-suggestions">
-                    <!-- User suggestions will be loaded here -->
-                </div>
-            </div>
-        </aside>
     </div>
 
     <!-- Search Results Modal -->

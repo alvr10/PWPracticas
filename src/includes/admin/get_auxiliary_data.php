@@ -1,5 +1,5 @@
 <?php
-// src/includes/admin/get_auxiliary_data.php
+// src/includes/admin/get_auxiliary_data.php - FIXED VERSION
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
@@ -31,11 +31,11 @@ try {
     
     switch ($type) {
         case 'activity-types':
-            $sql = "SELECT id, nombre FROM tipos_actividad WHERE id = :id";
+            $sql = "SELECT id, nombre FROM tipos_actividad ORDER BY nombre";
             break;
             
         case 'countries':
-            $sql = "SELECT id, nombre FROM paises WHERE id = :id";
+            $sql = "SELECT id, nombre FROM paises ORDER BY nombre";
             break;
             
         case 'provinces':
@@ -43,7 +43,7 @@ try {
                 SELECT p.id, p.nombre, p.pais_id, pa.nombre as pais_nombre 
                 FROM provincias p 
                 INNER JOIN paises pa ON p.pais_id = pa.id 
-                WHERE p.id = :id
+                ORDER BY pa.nombre, p.nombre
             ";
             break;
             
@@ -54,7 +54,7 @@ try {
                 FROM localidades l 
                 INNER JOIN provincias p ON l.provincia_id = p.id 
                 INNER JOIN paises pa ON p.pais_id = pa.id 
-                WHERE l.id = :id
+                ORDER BY pa.nombre, p.nombre, l.nombre
             ";
             break;
             
@@ -63,21 +63,16 @@ try {
     }
     
     $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
-    $item = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$item) {
-        throw new Exception('Item not found');
-    }
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     echo json_encode([
         'success' => true,
-        'item' => $item
+        'data' => $data
     ]);
     
 } catch (Exception $e) {
-    error_log("Get auxiliary item error: " . $e->getMessage());
+    error_log("Get auxiliary data error: " . $e->getMessage());
     http_response_code(400);
     echo json_encode([
         'success' => false,

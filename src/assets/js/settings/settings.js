@@ -1,9 +1,10 @@
+// Settings JavaScript
 document.addEventListener('DOMContentLoaded', function() {
   const API_BASE_URL = 'http://localhost:8000/src/includes/settings/';
-  let currentSettings = {};
+  const ADMIN_API_URL = 'http://localhost:8000/src/includes/admin/';
+  let currentUser = {};
   
-  // Elementos del DOM
-  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  // DOM Elements
   const emailModal = document.getElementById('email-modal');
   const passwordModal = document.getElementById('password-modal');
   const confirmationModal = document.getElementById('confirmation-modal');
@@ -12,21 +13,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const closeButtons = document.querySelectorAll('.close-modal, .close-modal-btn');
   const logoutBtn = document.getElementById('logout-btn');
   
-  // Cargar configuraciones al iniciar
+  // Load settings on start
   loadSettings();
   
   // Event listeners
-  darkModeToggle.addEventListener('change', toggleDarkMode);
-  openEmailBtn.addEventListener('click', () => emailModal.style.display = 'flex');
-  openPasswordBtn.addEventListener('click', () => passwordModal.style.display = 'flex');
-  logoutBtn.addEventListener('click', handleLogout);
+  openEmailBtn?.addEventListener('click', () => emailModal.style.display = 'flex');
+  openPasswordBtn?.addEventListener('click', () => passwordModal.style.display = 'flex');
+  logoutBtn?.addEventListener('click', handleLogout);
   
   closeButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      emailModal.style.display = 'none';
-      passwordModal.style.display = 'none';
-      confirmationModal.style.display = 'none';
-    });
+    button.addEventListener('click', closeAllModals);
   });
   
   window.addEventListener('click', (event) => {
@@ -35,120 +31,165 @@ document.addEventListener('DOMContentLoaded', function() {
     if (event.target === confirmationModal) confirmationModal.style.display = 'none';
   });
   
-  // Formularios
-  document.getElementById('email-form').addEventListener('submit', handleEmailChange);
-  document.getElementById('password-form').addEventListener('submit', handlePasswordChange);
+  // Form submissions
+  document.getElementById('email-form')?.addEventListener('submit', handleEmailChange);
+  document.getElementById('password-form')?.addEventListener('submit', handlePasswordChange);
   
-  // Configuración de toggles
-  setupSettingToggles();
-  
-  // Función para cargar configuraciones
+  // Load user settings and profile
   async function loadSettings() {
     try {
-      const response = await fetch(`${API_BASE_URL}get_settings.php`);
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}get_settings.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token: token })
+      });
       
       if (!response.ok) {
         throw new Error('Error al cargar configuraciones');
       }
       
       const data = await response.json();
-      currentSettings = data.settings;
       
-      // Mostrar datos del usuario
-      document.querySelector('.account-name').textContent = `${data.user.name} ${data.user.lastname}`;
-      document.querySelector('.account-email').textContent = data.user.email;
-      document.querySelector('.account-avatar img').src = data.user.avatar;
+      if (!data.success) {
+        throw new Error(data.error || 'Error loading settings');
+      }
       
-      // Configurar toggles
-      document.getElementById('public-profile-toggle').checked = currentSettings.public_profile;
-      document.getElementById('location-sharing-toggle').checked = currentSettings.share_location;
-      document.getElementById('applause-notifications').checked = currentSettings.applause_notif;
-      document.getElementById('comment-notifications').checked = currentSettings.comments_notif;
-      document.getElementById('friend-notifications').checked = currentSettings.friends_notif;
-      document.getElementById('achievement-notifications').checked = currentSettings.achievements_notif;
-      document.getElementById('email-notifications').checked = currentSettings.email_notif;
-      darkModeToggle.checked = currentSettings.dark_mode;
+      currentUser = data.user;
       
-      if (currentSettings.dark_mode) {
-        document.body.classList.add('dark-mode');
+      // Update user display
+      updateUserDisplay(data.user);
+            
+      // Show admin button if user is admin
+      if (data.user.is_admin) {
+        showAdminButton();
       }
         
     } catch (error) {
       console.error('Error:', error);
-      showMessage('Error al cargar configuraciones', 'error');
+      showMessage('Error al cargar configuraciones: ' + error.message, 'error');
+      
+      // If auth error, redirect to login
+      if (error.message.includes('token') || error.message.includes('auth')) {
+        setTimeout(() => {
+          window.location.href = '../../auth/login.html';
+        }, 2000);
+      }
     }
   }
   
-  // Función para manejar el modo oscuro
-  function toggleDarkMode() {
-    const isDarkMode = darkModeToggle.checked;
-    document.body.classList.toggle('dark-mode', isDarkMode);
+  // Update user display
+  function updateUserDisplay(user) {
+    // Update account overview
+    const accountName = document.querySelector('.account-name');
+    const accountEmail = document.querySelector('.account-email');
+    const accountAvatar = document.querySelector('.account-avatar img');
     
-    // Guardar en cookies
-    document.cookie = `darkMode=${isDarkMode}; path=/; max-age=${60*60*24*30}`;
+    if (accountName) accountName.textContent = `${user.name} ${user.lastname}`;
+    if (accountEmail) accountEmail.textContent = user.email;
+    if (accountAvatar) accountAvatar.src = user.avatar;
     
-    // Actualizar en el servidor si es necesario
-    updateSettings({ dark_mode: isDarkMode });
+    // Update current email in modal
+    const currentEmailField = document.getElementById('current-email');
+    if (currentEmailField) currentEmailField.value = user.email;
   }
   
-  // Función para configurar los toggles de configuración
-  function setupSettingToggles() {
-    const settingToggles = [
-      'public-profile-toggle',
-      'location-sharing-toggle',
-      'applause-notifications',
-      'comment-notifications',
-      'friend-notifications',
-      'achievement-notifications',
-      'email-notifications'
-    ];
+  // Configure setting toggles
+  function configureToggles(settings) {
+    const toggles = {
+      'public-profile-toggle': settings.public_profile,
+      'location-sharing-toggle': settings.share_location,
+      'applause-notifications': settings.applause_notif,
+      'comment-notifications': settings.comments_notif,
+      'friend-notifications': settings.friends_notif,
+      'achievement-notifications': settings.achievements_notif,
+      'email-notifications': settings.email_notif
+    };
     
-    settingToggles.forEach(id => {
-      document.getElementById(id).addEventListener('change', function() {
-        const settingName = id.replace('-toggle', '').replace('-notifications', '_notif').replace(/-/g, '_');
-        updateSettings({ [settingName]: this.checked });
-      });
+    Object.entries(toggles).forEach(([id, value]) => {
+      const toggle = document.getElementById(id);
+      if (toggle) {
+        toggle.checked = value;
+        toggle.addEventListener('change', function() {
+          console.log(`Setting ${id} changed to:`, this.checked);
+        });
+      }
     });
   }
   
-  // Función para actualizar configuraciones en el servidor
-  async function updateSettings(settings) {
-    try {
-      const response = await fetch(`${API_BASE_URL}update_settings.php`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(settings)
-      });
+  // Show admin button
+  function showAdminButton() {
+    // Check if admin button already exists
+    if (document.querySelector('.admin-access-btn')) return;
+    
+    // Create admin section
+    const adminSection = document.createElement('section');
+    adminSection.className = 'settings-section admin-section';
+    adminSection.innerHTML = `
+      <div class="section-header">
+        <h3 class="section-title">
+          <i class="fas fa-shield-alt"></i>
+          Panel de Administración
+        </h3>
+      </div>
       
-      if (!response.ok) {
-        throw new Error('Error al actualizar configuraciones');
-      }
-      
-      // Actualizar configuraciones locales
-      currentSettings = { ...currentSettings, ...settings };
-        
-    } catch (error) {
-      console.error('Error:', error);
-      showMessage('Error al guardar configuraciones', 'error');
+      <div class="settings-item clickable admin-access-btn">
+        <div class="settings-item-content">
+          <div class="settings-item-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="settings-item-info">
+            <span class="settings-item-title">Acceder al Panel de Admin</span>
+            <span class="settings-item-description">Gestionar usuarios, actividades y datos del sistema</span>
+          </div>
+        </div>
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    `;
+    
+    // Insert before the support section
+    const supportSection = document.querySelector('.settings-section:has(.fas.fa-question-circle)');
+    if (supportSection) {
+      supportSection.parentNode.insertBefore(adminSection, supportSection);
+    } else {
+      // Fallback: append to settings container
+      document.querySelector('.settings-container').appendChild(adminSection);
     }
+    
+    // Add click listener
+    const adminBtn = adminSection.querySelector('.admin-access-btn');
+    adminBtn.addEventListener('click', () => {
+      window.location.href = '../admin/admin.html';
+    });
   }
   
-  // Función para manejar cambio de email
+  // Handle email change
   async function handleEmailChange(e) {
     e.preventDefault();
     
     const currentPassword = document.getElementById('email-password').value;
     const newEmail = document.getElementById('new-email').value;
     
+    if (!currentPassword || !newEmail) {
+      showMessage('Todos los campos son obligatorios', 'error');
+      return;
+    }
+    
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_BASE_URL}change_email.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          token: token,
           current_password: currentPassword,
           new_email: newEmail
         })
@@ -156,15 +197,19 @@ document.addEventListener('DOMContentLoaded', function() {
       
       const data = await response.json();
       
-      if (!response.ok) {
+      if (!data.success) {
         throw new Error(data.error || 'Error al cambiar el correo');
       }
       
       showMessage(data.message || 'Correo actualizado con éxito', 'success');
       emailModal.style.display = 'none';
       
-      // Actualizar email mostrado
-      document.querySelector('.account-email').textContent = newEmail;
+      // Update email display
+      currentUser.email = newEmail;
+      updateUserDisplay(currentUser);
+      
+      // Clear form
+      document.getElementById('email-form').reset();
         
     } catch (error) {
       console.error('Error:', error);
@@ -172,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Función para manejar cambio de contraseña
+  // Handle password change
   async function handlePasswordChange(e) {
     e.preventDefault();
     
@@ -180,18 +225,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const newPassword = document.getElementById('new-password').value;
     const confirmPassword = document.getElementById('confirm-password').value;
     
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      showMessage('Todos los campos son obligatorios', 'error');
+      return;
+    }
+    
     if (newPassword !== confirmPassword) {
       showMessage('Las contraseñas no coinciden', 'error');
       return;
     }
     
+    if (newPassword.length < 6) {
+      showMessage('La contraseña debe tener al menos 6 caracteres', 'error');
+      return;
+    }
+    
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_BASE_URL}change_password.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          token: token,
           current_password: currentPassword,
           new_password: newPassword,
           confirm_password: confirmPassword
@@ -200,12 +257,15 @@ document.addEventListener('DOMContentLoaded', function() {
       
       const data = await response.json();
       
-      if (!response.ok) {
+      if (!data.success) {
         throw new Error(data.error || 'Error al cambiar la contraseña');
       }
       
       showMessage(data.message || 'Contraseña actualizada con éxito', 'success');
       passwordModal.style.display = 'none';
+      
+      // Clear form
+      document.getElementById('password-form').reset();
         
     } catch (error) {
       console.error('Error:', error);
@@ -213,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Función para manejar logout
+  // Handle logout
   async function handleLogout() {
     showConfirmation(
       'Cerrar sesión', 
@@ -221,71 +281,99 @@ document.addEventListener('DOMContentLoaded', function() {
       async () => {
         try {
           const token = localStorage.getItem('auth_token');
-          if (!token) {
-            throw new Error('No authentication token found');
-          }
-
-          const response = await fetch('../../../includes/auth/logout.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ token: token })
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const data = await response.json();
           
-          if (data.success) {
-            // Clear local storage and redirect
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user_data');
-            window.location.href = '../../modules/home.html';
-          } else {
-            throw new Error(data.message || 'Logout failed');
+          // Try to logout from server
+          try {
+            const response = await fetch('../../includes/auth/logout.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ token: token })
+            });
+            
+            const data = await response.json();
+            console.log('Logout response:', data);
+          } catch (logoutError) {
+            console.log('Server logout failed, continuing with local logout');
           }
+          
+          // Clear local storage and redirect
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_data');
+          window.location.href = '../home.html';
+          
         } catch (error) {
           console.error('Logout error:', error);
           // Still clear local storage even if server logout failed
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user_data');
-          window.location.href = '../../modules/home.html';
+          window.location.href = '../home.html';
         }
       }
     );
   }
+  
+  // Close all modals
+  function closeAllModals() {
+    emailModal.style.display = 'none';
+    passwordModal.style.display = 'none';
+    confirmationModal.style.display = 'none';
+  }
     
-  // Función para mostrar mensajes
+  // Show message
   function showMessage(message, type) {
+    // Remove existing message
+    const existingMessage = document.querySelector('.settings-message');
+    if (existingMessage) {
+      existingMessage.remove();
+    }
+
     const messageElement = document.createElement('div');
-    messageElement.className = `alert alert-${type}`;
+    messageElement.className = `settings-message alert alert-${type}`;
+    messageElement.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3'};
+      color: white;
+      padding: 15px 20px;
+      border-radius: 5px;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-width: 400px;
+      word-wrap: break-word;
+    `;
     messageElement.textContent = message;
     
     document.body.appendChild(messageElement);
     
     setTimeout(() => {
-      messageElement.remove();
-    }, 5000);
+      messageElement.style.opacity = '0';
+      messageElement.style.transform = 'translateX(100%)';
+      setTimeout(() => messageElement.remove(), 300);
+    }, 4000);
   }
   
-  // Función para mostrar confirmación
+  // Show confirmation
   function showConfirmation(title, message, callback) {
-    document.getElementById('confirmation-title').textContent = title;
-    document.getElementById('confirmation-message').textContent = message;
-    
+    const titleEl = document.getElementById('confirmation-title');
+    const messageEl = document.getElementById('confirmation-message');
     const confirmBtn = document.getElementById('confirm-action-btn');
     
-    // Remover eventos anteriores
-    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+    if (titleEl) titleEl.textContent = title;
+    if (messageEl) messageEl.textContent = message;
     
-    document.getElementById('confirm-action-btn').addEventListener('click', () => {
-      callback();
-      confirmationModal.style.display = 'none';
-    });
+    // Remove previous event listeners
+    if (confirmBtn) {
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      
+      newConfirmBtn.addEventListener('click', () => {
+        callback();
+        confirmationModal.style.display = 'none';
+      });
+    }
     
     confirmationModal.style.display = 'flex';
   }

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Usuario | RunTrackPro</title>
+    <link rel="stylesheet" href="../../assets/css/profile/friend-profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Cargando perfil...</p>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="navbar-content">
+            <a href="../social/feed.html" class="logo">RunTrackPro</a>
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar usuarios, rutas..." id="user-search">
+                    <button type="button" title="Buscar" id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <nav class="top-nav-links">
+                <a title="Inicio" href="../social/feed.html" class="nav-link"><i class="fas fa-home"></i></a>
+                <a title="Crear publicación" href="../post/post.html" class="nav-link"><i class="fas fa-plus-square"></i></a>
+                <a title="Perfil" href="profile.html" class="nav-link"><i class="fas fa-user"></i></a>
+                <a title="Configuración" href="../settings/settings.html" class="nav-link"><i class="fas fa-cog"></i></a>
+            </nav>
+        </div>
+    </nav>
+
+    <div class="profile-container" id="profile-container" style="display: none;">
+        <!-- Profile Header -->
+        <header class="profile-header">
+            <div class="profile-cover">
+                <div class="cover-overlay"></div>
+            </div>
+            <div class="profile-info">
+                <div class="profile-avatar-container">
+                    <img id="profile-avatar" src="../../../public/profiles/default-avatar.jpg" alt="Avatar del usuario" class="profile-avatar">
+                    <div class="profile-status" id="profile-status">
+                        <i class="fas fa-circle"></i>
+                        <span>Activo</span>
+                    </div>
+                </div>
+                <div class="profile-basic-info">
+                    <h1 id="profile-name">Nombre Apellido</h1>
+                    <h2 id="profile-username">@username</h2>
+                    <div class="profile-badges">
+                        <span class="badge friend-badge" id="friend-badge">
+                            <i class="fas fa-user-friends"></i>
+                            Amigo
+                        </span>
+                        <span class="badge level-badge">
+                            <i class="fas fa-medal"></i>
+                            Nivel 5
+                        </span>
+                    </div>
+                    <div class="profile-actions">
+                        <button type="button" id="follow-btn" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i>
+                            <span id="follow-btn-text">Seguir</span>
+                        </button>
+                        <button type="button" id="message-btn" class="btn btn-secondary">
+                            <i class="fas fa-envelope"></i>
+                            Mensaje
+                        </button>
+                        <button type="button" id="more-actions-btn" class="btn btn-icon" title="Más acciones">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="profile-content">
+            <!-- Quick Stats Overview -->
+            <section class="quick-stats-section">
+                <div class="stats-overview">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-activities">0</div>
+                        <div class="stat-label">Actividades</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-distance">0</div>
+                        <div class="stat-label">Kilómetros</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-friends">0</div>
+                        <div class="stat-label">Seguidores</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-following">0</div>
+                        <div class="stat-label">Siguiendo</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content Grid -->
+            <div class="profile-grid">
+                <!-- Left Column -->
+                <div class="profile-left-column">
+                    <!-- Personal Information -->
+                    <section class="profile-section info-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-info-circle"></i> 
+                            Información Personal
+                        </h3>
+                        <div class="profile-details">
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    Ubicación
+                                </span>
+                                <span id="profile-location" class="detail-value">Madrid, España</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-running"></i> 
+                                    Actividad Preferida
+                                </span>
+                                <span id="profile-activity" class="detail-value">Ciclismo en ruta</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-calendar-alt"></i> 
+                                    Miembro desde
+                                </span>
+                                <span id="profile-join-date" class="detail-value">Enero 2023</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">
+                                    <i class="fas fa-clock"></i> 
+                                    Última actividad
+                                </span>
+                                <span id="profile-last-activity" class="detail-value">Hace 2 días</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Common Friends -->
+                    <section class="profile-section common-friends-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-users"></i> 
+                            Amigos en común
+                        </h3>
+                        <div id="common-friends-list" class="common-friends-list">
+                            <!-- Common friends will be loaded here -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column -->
+                <div class="profile-right-column">
+                    <!-- Activity Filter -->
+                    <div class="activity-filter">
+                        <button class="filter-btn active" data-filter="all">
+                            <i class="fas fa-list"></i>
+                            Todas
+                        </button>
+                        <button class="filter-btn" data-filter="running">
+                            <i class="fas fa-running"></i>
+                            Carrera
+                        </button>
+                        <button class="filter-btn" data-filter="cycling">
+                            <i class="fas fa-bicycle"></i>
+                            Ciclismo
+                        </button>
+                        <button class="filter-btn" data-filter="hiking">
+                            <i class="fas fa-hiking"></i>
+                            Senderismo
+                        </button>
+                    </div>
+
+                    <!-- Recent Activities -->
+                    <section class="profile-section recent-activities-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-history"></i> 
+                            Actividades Recientes
+                        </h3>
+                        <div id="activities-list" class="activities-list">
+                            <!-- Activities will be loaded here -->
+                        </div>
+                        
+                        <div class="load-more-activities" id="load-more-activities" style="display: none;">
+                            <button class="btn btn-secondary" id="load-more-activities-btn">
+                                <i class="fas fa-plus"></i>
+                                Ver más actividades
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- More Actions Menu -->
+    <div id="more-actions-menu" class="dropdown-menu">
+        <button type="button" class="dropdown-item" id="block-user-btn">
+            <i class="fas fa-ban"></i>
+            Bloquear usuario
+        </button>
+        <button type="button" class="dropdown-item" id="report-user-btn">
+            <i class="fas fa-flag"></i>
+            Reportar usuario
+        </button>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmation-title">Confirmar acción</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="confirmation-content">
+                <p id="confirmation-message">¿Estás seguro de que quieres realizar esta acción?</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary close-modal-btn">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="confirm-action-btn">
+                    <i class="fas fa-check"></i>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Detail Modal -->
+    <div id="activity-modal" class="modal">
+        <div class="modal-content activity-modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="activity-detail-content">
+                <!-- Activity details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Page -->
+    <div id="error-page" class="error-page" style="display: none;">
+        <div class="error-content">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h2>Usuario no encontrado</h2>
+            <p>El usuario que buscas no existe o no tienes permisos para ver su perfil.</p>
+            <a href="../social/feed.html" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                Volver al inicio
+            </a>
+        </div>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+    <script src="../../assets/js/profile/friend-profile.js" type="module"></script>
+</body>
+</html>
