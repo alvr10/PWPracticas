@@ -1,44 +1,97 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/database.php';
-session_start();
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'No autorizado']);
+require_once '../config/database.php';
+
+error_log("Search friends endpoint called");
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
-$userId = $_SESSION['user_id'];
-$searchTerm = $_GET['q'] ?? '';
-
 try {
+    $input = json_decode(file_get_contents('php://input'), true);
+    error_log("Search friends input: " . json_encode($input));
+    
+    if (!isset($input['token'])) {
+        throw new Exception('Token is required');
+    }
+    
+    if (!isset($input['query'])) {
+        throw new Exception('Search query is required');
+    }
+    
+    $token = $input['token'];
+    $searchTerm = trim($input['query']);
+    
+    error_log("Searching for friends with term: " . $searchTerm);
+    
+    // Simple token verification using session
+    session_start();
+    if (!isset($_SESSION['auth_token']) || $_SESSION['auth_token'] !== $token || 
+        !isset($_SESSION['user_id']) || $_SESSION['auth'] !== true) {
+        throw new Exception('Invalid or expired token');
+    }
+    
+    $userId = $_SESSION['user_id'];
+    error_log("User ID from session: " . $userId);
+    
+    $db = new Database();
+    $pdo = $db->connect();
+
     $stmt = $pdo->prepare("
-        SELECT u.id, u.username, u.nombre, u.apellidos, i.ruta as imagen 
+        SELECT u.id, u.username, u.nombre, u.apellidos, i.nombre as imagen_perfil
         FROM usuarios u
         LEFT JOIN imagenes i ON u.imagen_perfil_id = i.id
         WHERE (u.nombre LIKE :search OR u.apellidos LIKE :search OR u.username LIKE :search)
         AND u.id != :userId
+        AND u.fecha_baja IS NULL
         LIMIT 10
     ");
+    
+    $searchPattern = "%$searchTerm%";
     $stmt->execute([
-        ':search' => "%$searchTerm%",
+        ':search' => $searchPattern,
         ':userId' => $userId
     ]);
     
     $friends = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Found " . count($friends) . " potential friends");
     
-    echo json_encode(array_map(function($friend) {
+    // Format the response
+    $formattedFriends = array_map(function($friend) {
         return [
             'id' => $friend['id'],
-            'name' => $friend['nombre'] . ' ' . $friend['apellidos'],
+            'nombre' => $friend['nombre'],
+            'apellidos' => $friend['apellidos'],
             'username' => $friend['username'],
-            'avatar' => $friend['imagen'] ? '../../' . $friend['imagen'] : '../../public/profiles/default-avatar.jpg'
+            'imagen_perfil' => $friend['imagen_perfil'] ? 
+                '../../../public/profiles/' . $friend['imagen_perfil'] : 
+                '../../../public/profiles/default-avatar.jpg'
         ];
-    }, $friends));
+    }, $friends);
+    
+    echo json_encode([
+        'success' => true,
+        'friends' => $formattedFriends
+    ]);
 
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    error_log("Search friends error: " . $e->getMessage());
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
 ?>

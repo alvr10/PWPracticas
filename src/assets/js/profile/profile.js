@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('Profile script loaded');
+
   const API_BASE_URL = 'http://localhost:8000/src/includes/profile/';
   
   // Elementos del DOM
@@ -24,25 +26,42 @@ document.addEventListener('DOMContentLoaded', function() {
   loadProfileData();
   
   // Event listeners
-  settingsBtn.addEventListener('click', openSettingsModal);
-  closeModal.addEventListener('click', closeSettingsModal);
-  cancelBtn.addEventListener('click', closeSettingsModal);
+  if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
+  if (closeModal) closeModal.addEventListener('click', closeSettingsModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeSettingsModal);
+  if (settingsForm) settingsForm.addEventListener('submit', saveProfileChanges);
+  if (uploadBtn) uploadBtn.addEventListener('click', () => avatarUpload?.click());
+  if (avatarUpload) avatarUpload.addEventListener('change', handleAvatarUpload);
+  if (removeAvatarBtn) removeAvatarBtn.addEventListener('click', removeAvatar);
+  
   window.addEventListener('click', outsideModalClick);
-  settingsForm.addEventListener('submit', saveProfileChanges);
-  uploadBtn.addEventListener('click', () => avatarUpload.click());
-  avatarUpload.addEventListener('change', handleAvatarUpload);
-  removeAvatarBtn.addEventListener('click', removeAvatar);
 
   // Función para cargar datos del perfil
   async function loadProfileData() {
     try {
-      const response = await fetch(`${API_BASE_URL}get_profile.php`);
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}get_profile.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token: token })
+      });
       
       if (!response.ok) {
-        throw new Error('Error al cargar el perfil');
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to load profile');
+      }
+      
       currentUserData = data.user;
       originalUserData = {...currentUserData};
       
@@ -56,20 +75,37 @@ document.addEventListener('DOMContentLoaded', function() {
       
     } catch (error) {
       console.error('Error cargando perfil:', error);
-      showMessage('Error al cargar el perfil', 'error');
+      showMessage('Error al cargar el perfil: ' + error.message, 'error');
+      
+      // If authentication error, redirect to login
+      if (error.message.includes('token') || error.message.includes('auth')) {
+        setTimeout(() => {
+          window.location.href = '../../auth/login.html';
+        }, 2000);
+      }
     }
   }
 
   // Mostrar estadísticas del perfil
   function displayProfileStats(stats) {
-    document.getElementById('total-activities').textContent = stats.total_actividades || '0';
-    document.getElementById('total-friends').textContent = stats.total_amigos || '0';
-    document.getElementById('total-aplausos').textContent = stats.total_aplausos || '0';
+    const totalActivitiesEl = document.getElementById('total-activities');
+    const totalDistanceEl = document.getElementById('total-distance');
+    const totalFriendsEl = document.getElementById('total-friends');
+    const totalAplausosEl = document.getElementById('total-aplausos');
+
+    if (totalActivitiesEl) totalActivitiesEl.textContent = stats.total_actividades || '0';
+    if (totalDistanceEl) totalDistanceEl.textContent = stats.total_distancia || '0';
+    if (totalFriendsEl) totalFriendsEl.textContent = stats.total_amigos || '0';
+    if (totalAplausosEl) totalAplausosEl.textContent = stats.total_aplausos || '0';
   }
 
   // Mostrar actividades recientes
   function displayRecentActivities(activities) {
     const activitiesList = document.getElementById('activities-list');
+    if (!activitiesList) return;
+    
+    // Clear existing content except load more button
+    const loadMoreBtn = activitiesList.querySelector('.load-more-activities');
     activitiesList.innerHTML = '';
     
     activities.forEach(activity => {
@@ -78,12 +114,19 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Determinar el icono según el tipo de actividad
       let activityIcon = 'fa-running'; // Por defecto
-      if (activity.tipo_actividad.includes('Ciclismo')) activityIcon = 'fa-bicycle';
-      if (activity.tipo_actividad.includes('Senderismo')) activityIcon = 'fa-hiking';
+      let activityClass = 'running';
+      
+      if (activity.tipo_actividad.toLowerCase().includes('ciclismo')) {
+        activityIcon = 'fa-bicycle';
+        activityClass = 'cycling';
+      } else if (activity.tipo_actividad.toLowerCase().includes('senderismo')) {
+        activityIcon = 'fa-hiking';
+        activityClass = 'hiking';
+      }
       
       activityCard.innerHTML = `
         <div class="activity-header">
-          <div class="activity-type ${activity.tipo_actividad.toLowerCase().replace(' ', '-')}">
+          <div class="activity-type ${activityClass}">
             <i class="fas ${activityIcon}"></i>
           </div>
           <div class="activity-info">
@@ -100,6 +143,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       activitiesList.appendChild(activityCard);
     });
+
+    // Re-add load more button if it existed
+    if (loadMoreBtn) {
+      activitiesList.appendChild(loadMoreBtn);
+    }
   }
 
   // Cargar datos de ubicación
@@ -118,16 +166,22 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Llenar países
       const countrySelect = document.getElementById('settings-country');
-      countries.forEach(country => {
-        const option = document.createElement('option');
-        option.value = country.id;
-        option.textContent = country.nombre;
-        countrySelect.appendChild(option);
-      });
-      
-      // Configurar eventos para selects dependientes
-      countrySelect.addEventListener('change', updateProvinces);
-      document.getElementById('settings-province').addEventListener('change', updateCities);
+      if (countrySelect) {
+        countries.forEach(country => {
+          const option = document.createElement('option');
+          option.value = country.id;
+          option.textContent = country.nombre;
+          countrySelect.appendChild(option);
+        });
+        
+        // Configurar eventos para selects dependientes
+        countrySelect.addEventListener('change', updateProvinces);
+      }
+
+      const provinceSelect = document.getElementById('settings-province');
+      if (provinceSelect) {
+        provinceSelect.addEventListener('change', updateCities);
+      }
       
     } catch (error) {
       console.error('Error cargando ubicaciones:', error);
@@ -135,16 +189,22 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function updateProvinces() {
-    const countryId = this.value;
+    const countryId = parseInt(this.value);
     const provinceSelect = document.getElementById('settings-province');
+    const citySelect = document.getElementById('settings-city');
+    
+    if (!provinceSelect || !citySelect) return;
     
     // Limpiar y deshabilitar si no hay selección
     provinceSelect.innerHTML = '<option value="">Selecciona una provincia</option>';
     provinceSelect.disabled = !countryId;
     
+    citySelect.innerHTML = '<option value="">Selecciona una localidad</option>';
+    citySelect.disabled = true;
+    
     if (countryId) {
       // Filtrar provincias por país
-      const filteredProvinces = provinces.filter(p => p.pais_id === countryId);
+      const filteredProvinces = provinces.filter(p => parseInt(p.pais_id) === countryId);
       
       // Llenar provincias
       filteredProvinces.forEach(province => {
@@ -156,20 +216,18 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Seleccionar la provincia del usuario si corresponde
       if (currentUserData && currentUserData.province && 
-          filteredProvinces.some(p => p.id === currentUserData.province)) {
+          filteredProvinces.some(p => parseInt(p.id) === parseInt(currentUserData.province))) {
         provinceSelect.value = currentUserData.province;
         updateCities.call(provinceSelect);
       }
     }
-    
-    // Limpiar ciudades
-    document.getElementById('settings-city').innerHTML = '<option value="">Selecciona una localidad</option>';
-    document.getElementById('settings-city').disabled = true;
   }
 
   function updateCities() {
-    const provinceId = this.value;
+    const provinceId = parseInt(this.value);
     const citySelect = document.getElementById('settings-city');
+    
+    if (!citySelect) return;
     
     // Limpiar y deshabilitar si no hay selección
     citySelect.innerHTML = '<option value="">Selecciona una localidad</option>';
@@ -177,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (provinceId) {
       // Filtrar ciudades por provincia
-      const filteredCities = cities.filter(c => c.provincia_id === provinceId);
+      const filteredCities = cities.filter(c => parseInt(c.provincia_id) === provinceId);
       
       // Llenar ciudades
       filteredCities.forEach(city => {
@@ -189,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Seleccionar la ciudad del usuario si corresponde
       if (currentUserData && currentUserData.city && 
-          filteredCities.some(c => c.id === currentUserData.city)) {
+          filteredCities.some(c => parseInt(c.id) === parseInt(currentUserData.city))) {
         citySelect.value = currentUserData.city;
       }
     }
@@ -200,38 +258,53 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!currentUserData) return;
     
     // Datos principales
-    document.getElementById('profile-name').textContent = `${currentUserData.name} ${currentUserData.lastname}`;
-    document.getElementById('profile-username').textContent = `@${currentUserData.username}`;
-    document.getElementById('profile-avatar').src = currentUserData.avatar_url;
+    const profileName = document.getElementById('profile-name');
+    const profileUsername = document.getElementById('profile-username');
+    const profileAvatar = document.getElementById('profile-avatar');
+    
+    if (profileName) profileName.textContent = `${currentUserData.name} ${currentUserData.lastname}`;
+    if (profileUsername) profileUsername.textContent = `@${currentUserData.username}`;
+    if (profileAvatar) profileAvatar.src = currentUserData.avatar_url;
     
     // Información personal
-    document.getElementById('profile-email').textContent = currentUserData.email;
-    document.getElementById('profile-birthdate').textContent = formatDate(currentUserData.birthdate);
-    document.getElementById('profile-location').textContent = currentUserData.location;
-    document.getElementById('profile-activity').textContent = currentUserData.activity;
-    document.getElementById('profile-join-date').textContent = currentUserData.join_date;
+    const profileEmail = document.getElementById('profile-email');
+    const profileBirthdate = document.getElementById('profile-birthdate');
+    const profileLocation = document.getElementById('profile-location');
+    const profileActivity = document.getElementById('profile-activity');
+    const profileJoinDate = document.getElementById('profile-join-date');
+    
+    if (profileEmail) profileEmail.textContent = currentUserData.email;
+    if (profileBirthdate) profileBirthdate.textContent = formatDate(currentUserData.birthdate);
+    if (profileLocation) profileLocation.textContent = currentUserData.location;
+    if (profileActivity) profileActivity.textContent = currentUserData.activity;
+    if (profileJoinDate) profileJoinDate.textContent = currentUserData.join_date;
     
     // Datos para el formulario de edición
-    document.getElementById('settings-name').value = currentUserData.name;
-    document.getElementById('settings-lastname').value = currentUserData.lastname;
-    document.getElementById('settings-username').value = currentUserData.username;
-    document.getElementById('settings-birthdate').value = currentUserData.birthdate;
+    const settingsName = document.getElementById('settings-name');
+    const settingsLastname = document.getElementById('settings-lastname');
+    const settingsUsername = document.getElementById('settings-username');
+    const settingsBirthdate = document.getElementById('settings-birthdate');
     
-    // Ubicación (se manejará en los selects dependientes)
+    if (settingsName) settingsName.value = currentUserData.name;
+    if (settingsLastname) settingsLastname.value = currentUserData.lastname;
+    if (settingsUsername) settingsUsername.value = currentUserData.username;
+    if (settingsBirthdate) settingsBirthdate.value = currentUserData.birthdate;
+    
+    // Ubicación
     const countrySelect = document.getElementById('settings-country');
-    if (countrySelect) {
-      countrySelect.value = currentUserData.country || '';
+    if (countrySelect && currentUserData.country) {
+      countrySelect.value = currentUserData.country;
       updateProvinces.call(countrySelect);
     }
     
     // Actividad preferida
     const activitySelect = document.getElementById('settings-activity');
-    if (activitySelect) {
-      activitySelect.value = currentUserData.activity_id || '';
+    if (activitySelect && currentUserData.activity_id) {
+      activitySelect.value = currentUserData.activity_id;
     }
     
     // Avatar
-    avatarPreview.src = currentUserData.avatar_url;
+    if (avatarPreview) avatarPreview.src = currentUserData.avatar_url;
   }
 
   function formatDate(dateString) {
@@ -240,23 +313,125 @@ document.addEventListener('DOMContentLoaded', function() {
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
-  // Resto del código (handleAvatarUpload, removeAvatar, saveProfileChanges, etc.)
-  // ... (mantener las mismas funciones del código original que no requieren cambios)
+  // Guardar cambios del perfil
+  async function saveProfileChanges(e) {
+    e.preventDefault();
+    
+    if (!saveBtn) return;
+    
+    const saveBtnText = document.getElementById('save-btn-text');
+    const saveBtnLoader = document.getElementById('save-btn-loader');
+    
+    // Show loading state
+    saveBtn.disabled = true;
+    if (saveBtnText) saveBtnText.style.display = 'none';
+    if (saveBtnLoader) saveBtnLoader.style.display = 'inline-block';
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Get form data
+      const formData = {
+        token: token,
+        name: document.getElementById('settings-name')?.value,
+        lastname: document.getElementById('settings-lastname')?.value,
+        username: document.getElementById('settings-username')?.value,
+        birthdate: document.getElementById('settings-birthdate')?.value,
+        country: document.getElementById('settings-country')?.value,
+        province: document.getElementById('settings-province')?.value,
+        city: document.getElementById('settings-city')?.value,
+        activity: document.getElementById('settings-activity')?.value
+      };
+
+      const response = await fetch(`${API_BASE_URL}update_profile.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update profile');
+      }
+      
+      showMessage('Perfil actualizado correctamente', 'success');
+      
+      // Update local data and close modal
+      currentUserData = {...currentUserData, ...formData};
+      originalUserData = {...currentUserData};
+      
+      setTimeout(() => {
+        closeSettingsModal();
+        loadProfileData(); // Reload to get fresh data
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      showMessage('Error al guardar los cambios: ' + error.message, 'error');
+    } finally {
+      // Reset button state
+      saveBtn.disabled = false;
+      if (saveBtnText) saveBtnText.style.display = 'inline';
+      if (saveBtnLoader) saveBtnLoader.style.display = 'none';
+    }
+  }
+
+  // Handle avatar upload (placeholder)
+  function handleAvatarUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // For now, just show preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      if (avatarPreview) {
+        avatarPreview.src = e.target.result;
+      }
+    };
+    reader.readAsDataURL(file);
+    
+    showMessage('Funcionalidad de subida de avatar próximamente', 'info');
+  }
+
+  // Remove avatar (placeholder)
+  function removeAvatar() {
+    if (avatarPreview) {
+      avatarPreview.src = '../../../public/profiles/gigachad_cat.jpg';
+    }
+    if (avatarUpload) {
+      avatarUpload.value = '';
+    }
+    showMessage('Avatar restablecido', 'info');
+  }
   
   // Funciones para el modal
   function openSettingsModal() {
-    settingsModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    if (settingsModal) {
+      settingsModal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
   }
 
   function closeSettingsModal() {
-    settingsModal.style.display = 'none';
-    document.body.style.overflow = '';
-    
-    // Restaurar valores originales si se canceló
-    if (originalUserData) {
-      currentUserData = {...originalUserData};
-      displayProfileData();
+    if (settingsModal) {
+      settingsModal.style.display = 'none';
+      document.body.style.overflow = '';
+      
+      // Restaurar valores originales si se canceló
+      if (originalUserData) {
+        currentUserData = {...originalUserData};
+        displayProfileData();
+      }
     }
   }
 
@@ -268,20 +443,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Mostrar mensajes
   function showMessage(message, type) {
-    const messageContainer = document.createElement('div');
-    messageContainer.className = `message ${type}`;
-    messageContainer.textContent = message;
-    
-    const existingMessage = document.querySelector('.message');
+    // Remove existing message
+    const existingMessage = document.querySelector('.profile-message');
     if (existingMessage) {
       existingMessage.remove();
     }
+
+    const messageContainer = document.createElement('div');
+    messageContainer.className = `profile-message alert alert-${type}`;
+    messageContainer.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3'};
+      color: white;
+      padding: 15px 20px;
+      border-radius: 5px;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-width: 400px;
+      word-wrap: break-word;
+    `;
+    messageContainer.textContent = message;
     
-    settingsForm.prepend(messageContainer);
+    document.body.appendChild(messageContainer);
     
     setTimeout(() => {
-      messageContainer.classList.add('fade-out');
-      setTimeout(() => messageContainer.remove(), 500);
-    }, 3000);
+      messageContainer.style.opacity = '0';
+      messageContainer.style.transform = 'translateX(100%)';
+      setTimeout(() => messageContainer.remove(), 300);
+    }, 4000);
   }
 });
