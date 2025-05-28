@@ -1,18 +1,33 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/database.php';
-session_start();
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Verificar si el usuario está logueado
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'No autorizado']);
+require_once '../config/database.php';
+require_once '../auth/auth_functions.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
     exit;
 }
 
-$userId = $_SESSION['user_id'];
-
 try {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!isset($input['token'])) {
+        throw new Exception('Token is required');
+    }
+    
+    $user = verify_token($input['token']);
+    if (!$user) {
+        throw new Exception('Invalid or expired token');
+    }
+    
+    $userId = $user['id'];
+    $pdo = get_db_connection();
+
     // Obtener datos básicos del usuario
     $stmt = $pdo->prepare("
         SELECT 
@@ -22,7 +37,7 @@ try {
             l.nombre as localidad_nombre, p.nombre as provincia_nombre, 
             pa.nombre as pais_nombre, ta.nombre as actividad_nombre,
             DATE_FORMAT(u.fecha_alta, '%M %Y') as fecha_alta_formatted,
-            i.ruta as imagen_perfil
+            i.nombre as imagen_perfil
         FROM usuarios u
         LEFT JOIN localidades l ON u.localidad_id = l.id
         LEFT JOIN provincias p ON l.provincia_id = p.id
@@ -69,6 +84,7 @@ try {
 
     // Formatear respuesta
     $response = [
+        'success' => true,
         'user' => [
             'id' => $userData['id'],
             'username' => $userData['username'],
@@ -79,7 +95,7 @@ try {
             'location' => $userData['localidad_nombre'] . ', ' . $userData['provincia_nombre'] . ', ' . $userData['pais_nombre'],
             'activity' => $userData['actividad_nombre'],
             'join_date' => $userData['fecha_alta_formatted'],
-            'avatar_url' => $userData['imagen_perfil'] ? '../../../' . $userData['imagen_perfil'] : '../../../public/profiles/default-avatar.jpg'
+            'avatar_url' => $userData['imagen_perfil'] ? '../../../public/profiles/' . $userData['imagen_perfil'] : '../../../public/profiles/default-avatar.jpg'
         ],
         'stats' => $stats,
         'activities' => $activities
@@ -87,8 +103,10 @@ try {
 
     echo json_encode($response);
 
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
-?>

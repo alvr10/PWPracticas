@@ -44,19 +44,15 @@ class Auth {
             // Hashear la contraseña
             $hashedPassword = password_hash($userData['password'], PASSWORD_DEFAULT);
             
-            // Generar código de validación
-            $codigoValidacion = bin2hex(random_bytes(16));
-            
-            // Preparar la consulta SQL
             $stmt = $this->conn->prepare("
                 INSERT INTO usuarios (
                     username, email, password, nombre, apellidos, 
                     fecha_nacimiento, actividad_preferida_id, localidad_id,
-                    codigo_validacion
+                    validado
                 ) VALUES (
                     :username, :email, :password, :nombre, :apellidos,
                     :fecha_nacimiento, :actividad_preferida_id, :localidad_id,
-                    :codigo_validacion
+                    1
                 )
             ");
             
@@ -69,17 +65,13 @@ class Auth {
             $stmt->bindParam(':fecha_nacimiento', $userData['fecha_nacimiento']);
             $stmt->bindParam(':actividad_preferida_id', $userData['actividad_preferida_id'], PDO::PARAM_INT);
             $stmt->bindParam(':localidad_id', $userData['localidad_id'], PDO::PARAM_INT);
-            $stmt->bindParam(':codigo_validacion', $codigoValidacion);
             
             // Ejecutar la consulta
             $stmt->execute();
             
-            // Enviar correo de validación (aquí añadirías el código para enviar el correo)
-            // Para este ejemplo, simplemente retornamos éxito
-            
             return [
                 'success' => true,
-                'message' => 'Usuario registrado correctamente. Por favor, valide su correo electrónico.'
+                'message' => 'Usuario registrado correctamente.'
             ];
             
         } catch (PDOException $e) {
@@ -89,21 +81,10 @@ class Auth {
             ];
         }
     }
-    
-    // Iniciar sesión
+
+    // Iniciar sesión (versión simplificada sin conteo de intentos)
     public function login($email, $password, $remember) {
         try {
-            // Registrar intento de inicio de sesión
-            $this->recordLoginAttempt($email);
-            
-            // Comprobar si ha excedido el límite de intentos
-            if ($this->checkLoginAttempts($email)) {
-                return [
-                    'success' => false,
-                    'message' => 'Ha excedido el número de intentos permitidos. Por favor, inténtelo más tarde.'
-                ];
-            }
-            
             // Buscar el usuario por email
             $stmt = $this->conn->prepare("SELECT * FROM usuarios WHERE email = :email AND fecha_baja IS NULL");
             $stmt->bindParam(':email', $email);
@@ -126,19 +107,10 @@ class Auth {
                 ];
             }
             
-            // Verificar si el usuario está validado
-            if (!$user['validado']) {
-                return [
-                    'success' => false,
-                    'message' => 'Su cuenta no ha sido validada. Por favor, revise su correo electrónico.'
-                ];
-            }
-            
             // Generar token para el localStorage
             $token = bin2hex(random_bytes(32));
             
-            // En una implementación real, guardaríamos este token en la base de datos
-            // Para este ejemplo, usaremos una sesión PHP
+            // Iniciar sesión PHP
             session_start();
             $_SESSION['auth'] = true;
             $_SESSION['auth_token'] = $token;

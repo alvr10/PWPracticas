@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('Profile script loaded');
+
   const API_BASE_URL = 'http://localhost:8000/src/includes/profile/';
   
   // Elementos del DOM
