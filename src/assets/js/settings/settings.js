@@ -214,17 +214,51 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Función para manejar logout
-  function handleLogout() {
+  async function handleLogout() {
     showConfirmation(
       'Cerrar sesión', 
       '¿Estás seguro de que quieres cerrar sesión?',
-      () => {
-        // En una implementación real, haríamos una llamada al servidor para logout
-        window.location.href = '../../index.html';
+      async () => {
+        try {
+          const token = localStorage.getItem('auth_token');
+          if (!token) {
+            throw new Error('No authentication token found');
+          }
+
+          const response = await fetch('../../../includes/auth/logout.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ token: token })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          
+          if (data.success) {
+            // Clear local storage and redirect
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            window.location.href = '../../modules/home.html';
+          } else {
+            throw new Error(data.message || 'Logout failed');
+          }
+        } catch (error) {
+          console.error('Logout error:', error);
+          // Still clear local storage even if server logout failed
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_data');
+          window.location.href = '../../modules/home.html';
+        }
       }
     );
   }
-  
+    
   // Función para mostrar mensajes
   function showMessage(message, type) {
     const messageElement = document.createElement('div');

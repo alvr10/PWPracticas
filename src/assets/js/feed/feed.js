@@ -378,12 +378,6 @@ function createActivityElement(activity) {
                     <div class="activity-meta">
                         <span class="activity-type">${activity.tipo_actividad_nombre}</span>
                         <h3 class="activity-title">${activity.titulo}</h3>
-                        <div class="activity-stats">
-                            <span><i class="fas fa-route"></i> ${stats.distance} km</span>
-                            <span><i class="fas fa-clock"></i> ${stats.duration}</span>
-                            <span><i class="fas fa-mountain"></i> ${stats.elevation}m</span>
-                            ${stats.pace ? `<span><i class="fas fa-tachometer-alt"></i> ${stats.pace}</span>` : ''}
-                        </div>
                     </div>
                 </div>
                 

@@ -71,50 +71,7 @@
                         <img src="../../../public/profiles/default-avatar.jpg" alt="Profile" class="user-avatar" id="current-user-avatar">
                         <span class="username" id="current-username">Tú</span>
                     </div>
-                    <button class="post-button" id="create-post-btn" onclick="window.location.href='../post/post.html'">Nueva actividad</button>
-                </div>
-                <div class="post-content" id="post-form" style="display: none;">
-                    <form id="new-post-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="activity-type">Tipo de actividad:</label>
-                                <select id="activity-type" required>
-                                    <option value="">Selecciona un tipo</option>
-                                    <option value="1">Ciclismo en ruta</option>
-                                    <option value="2">Ciclismo MTB</option>
-                                    <option value="3">Senderismo</option>
-                                    <option value="4">Carrera</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="post-title">Título:</label>
-                                <input type="text" id="post-title" placeholder="Título de la actividad" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="post-gpx">Ruta GPX:</label>
-                                <input type="file" id="post-gpx" accept=".gpx">
-                            </div>
-                            <div class="form-group">
-                                <label for="post-companions">Compañeros:</label>
-                                <input type="text" id="post-companions" placeholder="Buscar amigos...">
-                                <div id="companions-suggestions" class="companions-suggestions"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="post-images">Imágenes:</label>
-                            <input type="file" id="post-images" accept="image/*" multiple>
-                            <div id="image-preview" class="image-preview"></div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" id="cancel-post-btn" class="btn-secondary">Cancelar</button>
-                            <button type="submit" class="submit-button">
-                                <span id="submit-text">Publicar actividad</span>
-                                <div id="submit-loader" class="submit-loader" style="display: none;"></div>
-                            </button>
-                        </div>
-                    </form>
+                    <button type="button" class="post-button" id="create-post-btn" onclick="window.location.href='../post/post.html'">Nueva actividad</button>
                 </div>
             </section>
 
@@ -127,7 +84,7 @@
 
             <!-- Load More Button -->
             <div class="load-more" id="load-more-container" style="display: none;">
-                <button id="load-more-btn">Cargar más actividades</button>
+                <button type="button" id="load-more-btn">Cargar más actividades</button>
             </div>
         </main>
 

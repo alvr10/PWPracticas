@@ -16,8 +16,6 @@ $isAuthenticated = isset($_SESSION['auth']) && $_SESSION['auth'] === true;
 
 // Redirigir según estado de la sesión
 if ($isAuthenticated) {
-    redirect('modules/dashboard/index.php'); // Changed to .php
-} else {
-    redirect('auth/login.php'); // Changed to .php
+    redirect('modules/feed/feed.php'); // Changed to .php
 }
 ?>

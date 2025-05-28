@@ -52,7 +52,7 @@ function checkAuthStatus() {
                 // If we're on a login or register page, redirect to dashboard
                 const currentPath = window.location.pathname;
                 if (currentPath.includes('/auth/login.html') || currentPath.includes('/auth/register.html')) {
-                    window.location.href = '../modules/dashboard/index.html';
+                    window.location.href = '../modules/social/feed.html';
                 }
             }
         })

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('auth_token');
     const userData = JSON.parse(localStorage.getItem('user_data'));
     
-    if (!token || !userData) {
+    if ((!token || !userData) && path !== '/src/modules/home.html') {
         // Redirect to login if not authenticated
         window.location.href = '../auth/login.html';
         return;
