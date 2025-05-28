@@ -49,12 +49,6 @@ try {
         throw new Exception('Database connection failed');
     }
 
-    // Check if current user can view target user's activities
-    $user_check = $pdo->prepare("
-        SELECT perfil_publico, fecha_baja
-        FROM usuarios 
-        WHERE id = ?
-    ");
     $user_check->execute([$target_user_id]);
     $target_user = $user_check->fetch(PDO::FETCH_ASSOC);
 
