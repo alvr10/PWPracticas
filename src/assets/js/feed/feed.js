@@ -4,6 +4,7 @@ let feedActivities = [];
 let lastActivityId = 0;
 let isLoading = false;
 let selectedCompanions = [];
+let user_profile = null;
 
 // Base URL for API calls
 const API_BASE_URL = 'http://localhost:8000/src/includes/feed/';
@@ -104,8 +105,8 @@ function updateUserInfo() {
     // Update avatar
     const avatarElements = document.querySelectorAll('#current-user-avatar');
     avatarElements.forEach(avatar => {
-        if (currentUser.imagen_perfil_id) {
-            avatar.src = `../../../public/profiles/${currentUser.imagen_perfil_id}.jpg`;
+        if (currentUser.imagen_perfil_nombre) {
+            avatar.src = `../../../public/profiles/${currentUser.imagen_perfil_nombre}`;
         }
     });
     
@@ -132,10 +133,36 @@ async function loadUserStats() {
         const data = await response.json();
         
         if (data.success) {
+            // Update stats
             document.getElementById('week-distance').textContent = `${data.stats.week_distance} km`;
             document.getElementById('month-distance').textContent = `${data.stats.month_distance} km`;
             document.getElementById('total-activities').textContent = data.stats.total_activities;
-            document.getElementById('active-friends').textContent = data.stats.active_friends;
+            
+            // Update active friends if element exists
+            const activeFriendsElement = document.getElementById('active-friends');
+            if (activeFriendsElement) {
+                activeFriendsElement.textContent = data.stats.active_friends;
+            }
+            
+            // Update current user info if available in response
+            if (data.user_info) {
+                // Update the currentUser object with the fresh data
+                currentUser = {
+                    ...currentUser,
+                    ...data.user_info
+                };
+                
+                // Update localStorage with the fresh data
+                const existingUserData = JSON.parse(localStorage.getItem('user_data') || '{}');
+                const updatedUserData = {
+                    ...existingUserData,
+                    ...data.user_info
+                };
+                localStorage.setItem('user_data', JSON.stringify(updatedUserData));
+                
+                // Update the UI
+                updateUserInfo();
+            }
         }
     } catch (error) {
         console.error('Error loading user stats:', error);
