@@ -45,7 +45,7 @@ function initAnimations(chain) {
       start: "top bottom",
       end: "bottom top",
       scrub: 1.5,
-      markers: true,
+      markers: false,
     }
   })
   .to(chain.rotation, { 
@@ -65,7 +65,7 @@ function initAnimations(chain) {
       start: "top bottom",
       end: "bottom top",
       scrub: 1.5,
-      markers: true,
+      markers: false,
     }
   })
 
@@ -75,7 +75,7 @@ function initAnimations(chain) {
       start: "top bottom",
       end: "bottom top",
       scrub: 1.5,
-      markers: true,
+      markers: false,
     }
   })
 
@@ -85,7 +85,7 @@ function initAnimations(chain) {
       start: "top bottom",
       end: "bottom top",
       scrub: 1.5,
-      markers: true,
+      markers: false,
     }
   })
 
@@ -95,7 +95,7 @@ function initAnimations(chain) {
       start: "top bottom",
       end: "bottom top",
       scrub: 1.5,
-      markers: true,
+      markers: false,
     }
   })
 }

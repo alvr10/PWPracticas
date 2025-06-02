@@ -118,10 +118,7 @@ try {
         } else {
             $activity['has_gpx'] = false;
         }
-        
-        // Don't send full GPX content to frontend (too large)
-        unset($activity['ruta_gpx']);
-        
+                
         // Convert boolean values
         $activity['user_applauded'] = (bool)$activity['user_applauded'];
         $activity['aplausos_count'] = (int)$activity['aplausos_count'];

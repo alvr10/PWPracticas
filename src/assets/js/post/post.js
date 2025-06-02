@@ -201,65 +201,185 @@ document.addEventListener('DOMContentLoaded', function() {
     const mapPreview = document.getElementById('map-preview');
     if (!mapPreview) return;
     
+    // Add loading state
+    mapPreview.innerHTML = `
+      <div class="gpx-loading">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Procesando archivo GPX...</p>
+      </div>
+    `;
+    
     const reader = new FileReader();
     reader.onload = function(e) {
-      const gpxContent = e.target.result;
-      
-      // Parse GPX coordinates (simple extraction)
-      const coordinates = parseGpxCoordinates(gpxContent);
-      
-      if (coordinates.length > 0) {
-        // Create simple map preview
-        mapPreview.innerHTML = `
-          <div class="gpx-preview-info">
-            <i class="fas fa-route"></i>
-            <div class="route-info">
-              <h4>Ruta GPX cargada</h4>
-              <p>${coordinates.length} puntos de ruta</p>
-              <p>Distancia aprox: ${calculateDistance(coordinates).toFixed(1)} km</p>
-            </div>
-          </div>
-          <div class="gpx-preview-map">
-            <canvas id="route-canvas" width="400" height="200"></canvas>
-          </div>
-        `;
+      try {
+        const gpxContent = e.target.result;
         
-        // Draw simple route visualization
-        drawSimpleRoute(coordinates);
-      } else {
+        // Parse GPX coordinates
+        const coordinates = parseGpxCoordinates(gpxContent);
+        
+        if (coordinates.length > 0) {
+          // Calculate route statistics
+          const distance = calculateDistance(coordinates);
+          const bounds = getBounds(coordinates);
+          
+          // Create map preview with route info
+          mapPreview.innerHTML = `
+            <div class="gpx-preview-info">
+              <i class="fas fa-route"></i>
+              <div class="route-info">
+                <h4>Ruta GPX cargada</h4>
+                <p><strong>${coordinates.length}</strong> puntos de ruta</p>
+                <p><strong>Distancia:</strong> ${distance.toFixed(1)} km</p>
+                <p><strong>Inicio:</strong> ${coordinates[0].lat.toFixed(4)}, ${coordinates[0].lon.toFixed(4)}</p>
+                <p><strong>Final:</strong> ${coordinates[coordinates.length-1].lat.toFixed(4)}, ${coordinates[coordinates.length-1].lon.toFixed(4)}</p>
+              </div>
+            </div>
+            <div class="gpx-preview-map">
+              <canvas id="route-canvas" width="600" height="300"></canvas>
+            </div>
+          `;
+          
+          // Add class to indicate content is loaded
+          mapPreview.classList.add('has-content');
+          
+          // Draw route after DOM update
+          setTimeout(() => {
+            drawSimpleRoute(coordinates, bounds);
+          }, 100);
+          
+        } else {
+          mapPreview.innerHTML = `
+            <div class="gpx-preview-info">
+              <i class="fas fa-exclamation-triangle" style="color: #ff9800;"></i>
+              <div class="route-info">
+                <h4>Archivo GPX procesado</h4>
+                <p>No se pudieron extraer coordenadas para vista previa</p>
+                <p>El archivo se subirá correctamente</p>
+              </div>
+            </div>
+          `;
+          mapPreview.classList.add('has-content');
+        }
+      } catch (error) {
+        console.error('Error processing GPX file:', error);
         mapPreview.innerHTML = `
           <div class="gpx-preview-info">
-            <i class="fas fa-exclamation-triangle"></i>
+            <i class="fas fa-exclamation-triangle" style="color: #f44336;"></i>
             <div class="route-info">
-              <h4>Archivo GPX procesado</h4>
-              <p>No se pudieron extraer coordenadas para vista previa</p>
+              <h4>Error procesando GPX</h4>
+              <p>Hubo un problema al procesar el archivo</p>
+              <p>Intenta con otro archivo GPX</p>
             </div>
           </div>
         `;
       }
     };
     
+    reader.onerror = function() {
+      console.error('Error reading GPX file');
+      mapPreview.innerHTML = `
+        <div class="gpx-preview-info">
+          <i class="fas fa-exclamation-triangle" style="color: #f44336;"></i>
+          <div class="route-info">
+            <h4>Error leyendo archivo</h4>
+            <p>No se pudo leer el archivo GPX</p>
+          </div>
+        </div>
+      `;
+    };
+    
     reader.readAsText(file);
   }
 
-  // Simple GPX coordinate parser
   function parseGpxCoordinates(gpxContent) {
     const coordinates = [];
     
-    // Simple regex to extract lat/lon from GPX
-    const trkptRegex = /<trkpt[^>]*lat="([^"]*)"[^>]*lon="([^"]*)"/g;
-    let match;
-    
-    while ((match = trkptRegex.exec(gpxContent)) !== null) {
-      const lat = parseFloat(match[1]);
-      const lon = parseFloat(match[2]);
+    try {
+      // Try to parse as XML first
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(gpxContent, "text/xml");
       
-      if (!isNaN(lat) && !isNaN(lon)) {
-        coordinates.push({ lat: lat, lon: lon });
+      // Check for parsing errors
+      const parserError = xmlDoc.querySelector("parsererror");
+      if (parserError) {
+        console.warn('XML parsing failed, falling back to regex');
+        return parseGpxWithRegex(gpxContent);
       }
+      
+      // Look for track points (trkpt)
+      const trackPoints = xmlDoc.querySelectorAll('trkpt');
+      
+      trackPoints.forEach(point => {
+        const lat = parseFloat(point.getAttribute('lat'));
+        const lon = parseFloat(point.getAttribute('lon'));
+        
+        if (!isNaN(lat) && !isNaN(lon)) {
+          coordinates.push({ lat: lat, lon: lon });
+        }
+      });
+      
+      // If no track points, look for waypoints
+      if (coordinates.length === 0) {
+        const waypoints = xmlDoc.querySelectorAll('wpt');
+        waypoints.forEach(point => {
+          const lat = parseFloat(point.getAttribute('lat'));
+          const lon = parseFloat(point.getAttribute('lon'));
+          
+          if (!isNaN(lat) && !isNaN(lon)) {
+            coordinates.push({ lat: lat, lon: lon });
+          }
+        });
+      }
+      
+    } catch (error) {
+      console.warn('XML parsing failed, using regex fallback:', error);
+      return parseGpxWithRegex(gpxContent);
     }
     
     return coordinates;
+  }
+
+  function parseGpxWithRegex(gpxContent) {
+    const coordinates = [];
+    
+    // More comprehensive regex patterns
+    const patterns = [
+      /<trkpt[^>]*lat="([^"]*)"[^>]*lon="([^"]*)"/g,
+      /<wpt[^>]*lat="([^"]*)"[^>]*lon="([^"]*)"/g,
+      /lat="([^"]*)"[^>]*lon="([^"]*)"/g
+    ];
+    
+    for (const pattern of patterns) {
+      let match;
+      while ((match = pattern.exec(gpxContent)) !== null) {
+        const lat = parseFloat(match[1]);
+        const lon = parseFloat(match[2]);
+        
+        if (!isNaN(lat) && !isNaN(lon)) {
+          coordinates.push({ lat: lat, lon: lon });
+        }
+      }
+      
+      if (coordinates.length > 0) break;
+    }
+    
+    return coordinates;
+  }
+
+  function getBounds(coordinates) {
+    if (coordinates.length === 0) return null;
+    
+    let minLat = coordinates[0].lat, maxLat = coordinates[0].lat;
+    let minLon = coordinates[0].lon, maxLon = coordinates[0].lon;
+    
+    coordinates.forEach(coord => {
+      minLat = Math.min(minLat, coord.lat);
+      maxLat = Math.max(maxLat, coord.lat);
+      minLon = Math.min(minLon, coord.lon);
+      maxLon = Math.max(maxLon, coord.lon);
+    });
+    
+    return { minLat, maxLat, minLon, maxLon };
   }
 
   // Calculate approximate distance
@@ -291,45 +411,74 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Draw simple route on canvas
-  function drawSimpleRoute(coordinates) {
+  function drawSimpleRoute(coordinates, bounds) {
     const canvas = document.getElementById('route-canvas');
-    if (!canvas || coordinates.length < 2) return;
+    if (!canvas || coordinates.length < 2 || !bounds) return;
     
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
     
-    // Find bounds
-    let minLat = coordinates[0].lat, maxLat = coordinates[0].lat;
-    let minLon = coordinates[0].lon, maxLon = coordinates[0].lon;
-    
-    coordinates.forEach(coord => {
-      minLat = Math.min(minLat, coord.lat);
-      maxLat = Math.max(maxLat, coord.lat);
-      minLon = Math.min(minLon, coord.lon);
-      maxLon = Math.max(maxLon, coord.lon);
-    });
-    
     // Add padding
-    const padding = 20;
-    const latRange = maxLat - minLat;
-    const lonRange = maxLon - minLon;
+    const padding = 30;
+    const latRange = bounds.maxLat - bounds.minLat;
+    const lonRange = bounds.maxLon - bounds.minLon;
     
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+    // Ensure minimum range for very small routes
+    const minRange = 0.001;
+    const effectiveLatRange = Math.max(latRange, minRange);
+    const effectiveLonRange = Math.max(lonRange, minRange);
     
-    // Draw background
-    ctx.fillStyle = '#f0f8ff';
+    // Clear canvas with better background
+    ctx.fillStyle = '#f8f9fa';
     ctx.fillRect(0, 0, width, height);
     
-    // Draw route
-    ctx.strokeStyle = '#2196f3';
-    ctx.lineWidth = 3;
+    // Add grid lines for better visualization
+    ctx.strokeStyle = '#e9ecef';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    
+    // Vertical grid lines
+    for (let i = 1; i < 6; i++) {
+      const x = (width / 6) * i;
+      ctx.beginPath();
+      ctx.moveTo(x, padding);
+      ctx.lineTo(x, height - padding);
+      ctx.stroke();
+    }
+    
+    // Horizontal grid lines
+    for (let i = 1; i < 4; i++) {
+      const y = (height / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(width - padding, y);
+      ctx.stroke();
+    }
+    
+    ctx.setLineDash([]);
+    
+    // Draw route with gradient effect
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, '#4CAF50'); // Green start
+    gradient.addColorStop(1, '#2196F3'); // Blue end
+    
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // Add shadow effect
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    
     ctx.beginPath();
     
     coordinates.forEach((coord, index) => {
-      const x = padding + ((coord.lon - minLon) / lonRange) * (width - 2 * padding);
-      const y = height - padding - ((coord.lat - minLat) / latRange) * (height - 2 * padding);
+      const x = padding + ((coord.lon - bounds.minLon) / effectiveLonRange) * (width - 2 * padding);
+      const y = height - padding - ((coord.lat - bounds.minLat) / effectiveLatRange) * (height - 2 * padding);
       
       if (index === 0) {
         ctx.moveTo(x, y);
@@ -340,22 +489,47 @@ document.addEventListener('DOMContentLoaded', function() {
     
     ctx.stroke();
     
-    // Draw start point
-    const startX = padding + ((coordinates[0].lon - minLon) / lonRange) * (width - 2 * padding);
-    const startY = height - padding - ((coordinates[0].lat - minLat) / latRange) * (height - 2 * padding);
-    ctx.fillStyle = '#4caf50';
-    ctx.beginPath();
-    ctx.arc(startX, startY, 6, 0, 2 * Math.PI);
-    ctx.fill();
+    // Reset shadow for markers
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
     
-    // Draw end point
-    const endCoord = coordinates[coordinates.length - 1];
-    const endX = padding + ((endCoord.lon - minLon) / lonRange) * (width - 2 * padding);
-    const endY = height - padding - ((endCoord.lat - minLat) / latRange) * (height - 2 * padding);
-    ctx.fillStyle = '#f44336';
+    // Draw start point (green)
+    const startX = padding + ((coordinates[0].lon - bounds.minLon) / effectiveLonRange) * (width - 2 * padding);
+    const startY = height - padding - ((coordinates[0].lat - bounds.minLat) / effectiveLatRange) * (height - 2 * padding);
+    
+    ctx.fillStyle = '#4CAF50';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(endX, endY, 6, 0, 2 * Math.PI);
+    ctx.arc(startX, startY, 8, 0, 2 * Math.PI);
     ctx.fill();
+    ctx.stroke();
+    
+    // Draw end point (red)
+    const endCoord = coordinates[coordinates.length - 1];
+    const endX = padding + ((endCoord.lon - bounds.minLon) / effectiveLonRange) * (width - 2 * padding);
+    const endY = height - padding - ((endCoord.lat - bounds.minLat) / effectiveLatRange) * (height - 2 * padding);
+    
+    ctx.fillStyle = '#F44336';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(endX, endY, 8, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Add labels
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    
+    // Start label
+    ctx.fillText('INICIO', startX, startY - 15);
+    
+    // End label
+    ctx.fillText('FIN', endX, endY - 15);
   }
     
   // Manejar subida de imágenes

@@ -312,7 +312,7 @@ function renderFeedActivities(append = false) {
 }
 
 // Create HTML element for a single activity
-// Replace the existing createActivityElement function with this enhanced version
+// Enhanced createActivityElement function with proper GPX handling
 function createActivityElement(activity) {
     const activityDiv = document.createElement('article');
     activityDiv.className = 'post';
@@ -324,12 +324,19 @@ function createActivityElement(activity) {
     // Format time ago
     const timeAgo = formatTimeAgo(activity.fecha_publicacion);
     
-    // Check if activity has GPX data
-    const hasGpx = activity.ruta_gpx && activity.ruta_gpx.trim() !== '';
+    // Check if activity has GPX data - more comprehensive check
+    const hasGpx = activity.ruta_gpx && activity.ruta_gpx.trim() !== '' && 
+                   (activity.ruta_gpx.includes('<gpx') || activity.ruta_gpx.includes('<?xml'));
     
     // Check if current user has applauded
     const hasApplauded = activity.user_applauded || false;
     const applauseCount = activity.aplausos_count || 0;
+    
+    // Parse GPX stats if available
+    let gpxStats = null;
+    if (hasGpx && activity.ruta_gpx) {
+        gpxStats = parseGPXStats(activity.ruta_gpx);
+    }
     
     activityDiv.innerHTML = `
         <div class="post-header">
@@ -337,7 +344,14 @@ function createActivityElement(activity) {
                 <img src="${activity.usuario_imagen || '../../../public/profiles/default-avatar.jpg'}" 
                      alt="${activity.usuario_nombre}" 
                      class="user-avatar">
-                <span class="username">${activity.usuario_nombre} ${activity.usuario_apellidos}</span>
+                <div class="user-details">
+                    <span class="username">${activity.usuario_nombre} ${activity.usuario_apellidos}</span>
+                    <span class="activity-time">${timeAgo}</span>
+                </div>
+            </div>
+            <div class="activity-type">
+                <i class="${typeInfo.icon}"></i>
+                <span>${activity.tipo_actividad_nombre}</span>
             </div>
             <button type="button" title="Opciones" class="options-button">
                 <i class="fas fa-ellipsis-h"></i>
@@ -348,22 +362,53 @@ function createActivityElement(activity) {
             <div class="activity-info">
                 <div class="activity-header">
                     <div class="activity-meta">
-                        <span class="activity-type">${activity.tipo_actividad_nombre}</span>
                         <h3 class="activity-title">${activity.titulo}</h3>
+                        ${activity.descripcion ? `<p class="activity-description">${activity.descripcion}</p>` : ''}
                     </div>
                 </div>
+                
+                ${gpxStats ? `
+                    <div class="activity-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-route"></i>
+                            <span>${gpxStats.distance} km</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            <span>${gpxStats.duration}</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-mountain"></i>
+                            <span>${gpxStats.elevation} m</span>
+                        </div>
+                        ${gpxStats.pace ? `
+                            <div class="stat-item">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>${gpxStats.pace}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
                 
                 ${hasGpx ? `
                     <div class="activity-route">
                         <div class="route-header">
-                            <i class="fas fa-route"></i>
-                            <span>Ruta GPS disponible</span>
-                            <button class="view-route-btn" onclick="viewRoute(${activity.id})">
+                            <div class="route-info">
+                                <i class="fas fa-route"></i>
+                                <span>Ruta GPS disponible</span>
+                            </div>
+                            <button class="view-route-btn" onclick="toggleRoute(${activity.id}, '${activity.ruta_gpx ? btoa(activity.ruta_gpx) : ''}')">
+                                <i class="fas fa-map"></i>
                                 Ver ruta
                             </button>
                         </div>
                         <div id="route-preview-${activity.id}" class="route-preview" style="display: none;">
-                            <canvas id="route-canvas-${activity.id}" width="100%" height="200"></canvas>
+                            <div class="route-loading" id="route-loading-${activity.id}" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Cargando ruta...</span>
+                            </div>
+                            <canvas id="route-canvas-${activity.id}" width="100%" height="250" style="display: none;"></canvas>
+                            <div class="route-details" id="route-details-${activity.id}" style="display: none;"></div>
                         </div>
                     </div>
                 ` : ''}
@@ -384,11 +429,12 @@ function createActivityElement(activity) {
                         <span class="companions-label">Con:</span>
                         <div class="companions-list">
                             ${activity.companeros.map(c => `
-                                <div class="companion-avatar">
+                                <div class="companion-avatar" title="${c.nombre} ${c.apellidos}">
                                     <img src="${c.imagen_perfil || '../../../public/profiles/default-avatar.jpg'}" 
-                                         alt="${c.nombre}" title="${c.nombre} ${c.apellidos}">
+                                         alt="${c.nombre}">
                                 </div>
                             `).join('')}
+                            <span class="companions-text">${activity.companeros.map(c => c.nombre).join(', ')}</span>
                         </div>
                     </div>
                 ` : ''}
@@ -400,9 +446,18 @@ function createActivityElement(activity) {
                 <button class="like-button ${hasApplauded ? 'active' : ''}" 
                         data-activity-id="${activity.id}"
                         onclick="toggleApplause(${activity.id})">
-                    <i class="fas fa-thumbs-up"></i> Aplaudir
+                    <i class="fas fa-thumbs-up"></i> 
+                    <span>Aplaudir</span>
                 </button>
                 <span class="like-count">${applauseCount} aplausos</span>
+                <button class="action-btn comment-btn" onclick="openComments(${activity.id})">
+                    <i class="fas fa-comment"></i>
+                    Comentar
+                </button>
+                <button class="action-btn share-btn" onclick="shareActivity(${activity.id})">
+                    <i class="fas fa-share"></i>
+                    Compartir
+                </button>
             </div>
             <span class="post-date">${timeAgo}</span>
         </div>
@@ -410,6 +465,478 @@ function createActivityElement(activity) {
     
     return activityDiv;
 }
+
+// Enhanced toggle route function
+async function toggleRoute(activityId, encodedGpx) {
+    const routePreview = document.getElementById(`route-preview-${activityId}`);
+    const routeButton = document.querySelector(`[onclick*="toggleRoute(${activityId}"]`);
+    const routeLoading = document.getElementById(`route-loading-${activityId}`);
+    const routeCanvas = document.getElementById(`route-canvas-${activityId}`);
+    const routeDetails = document.getElementById(`route-details-${activityId}`);
+    
+    if (!routePreview || !routeButton) return;
+    
+    try {
+        if (routePreview.style.display === 'none') {
+            // Show route
+            routePreview.style.display = 'block';
+            routeLoading.style.display = 'flex';
+            routeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+            
+            // Decode and parse GPX
+            let gpxContent = '';
+            try {
+                gpxContent = atob(encodedGpx);
+            } catch (e) {
+                console.error('Error decoding GPX:', e);
+                throw new Error('Error al decodificar datos GPS');
+            }
+            
+            if (!gpxContent || gpxContent.trim() === '') {
+                throw new Error('Datos GPS no disponibles');
+            }
+            
+            // Parse coordinates
+            const coordinates = parseGpxCoordinatesAdvanced(gpxContent);
+            
+            if (coordinates.length === 0) {
+                throw new Error('No se encontraron coordenadas válidas en los datos GPS');
+            }
+            
+            // Hide loading and show canvas
+            routeLoading.style.display = 'none';
+            routeCanvas.style.display = 'block';
+            routeDetails.style.display = 'block';
+            
+            // Draw route
+            const routeInfo = drawEnhancedRoute(routeCanvas, coordinates);
+            
+            // Show route details
+            routeDetails.innerHTML = `
+                <div class="route-stats">
+                    <div class="route-stat">
+                        <strong>Puntos:</strong> ${coordinates.length}
+                    </div>
+                    <div class="route-stat">
+                        <strong>Distancia:</strong> ${routeInfo.distance.toFixed(2)} km
+                    </div>
+                    <div class="route-stat">
+                        <strong>Inicio:</strong> ${coordinates[0].lat.toFixed(4)}, ${coordinates[0].lon.toFixed(4)}
+                    </div>
+                    <div class="route-stat">
+                        <strong>Final:</strong> ${coordinates[coordinates.length-1].lat.toFixed(4)}, ${coordinates[coordinates.length-1].lon.toFixed(4)}
+                    </div>
+                </div>
+            `;
+            
+            // Update button
+            routeButton.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar ruta';
+            
+        } else {
+            // Hide route
+            routePreview.style.display = 'none';
+            routeButton.innerHTML = '<i class="fas fa-map"></i> Ver ruta';
+        }
+        
+    } catch (error) {
+        console.error('Error displaying route:', error);
+        
+        // Hide loading
+        routeLoading.style.display = 'none';
+        
+        // Show error
+        routePreview.innerHTML = `
+            <div class="route-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Error al cargar la ruta: ${error.message}</span>
+            </div>
+        `;
+        routePreview.style.display = 'block';
+        
+        // Reset button
+        routeButton.innerHTML = '<i class="fas fa-map"></i> Ver ruta';
+        
+        // Auto-hide error after 3 seconds
+        setTimeout(() => {
+            routePreview.style.display = 'none';
+        }, 3000);
+    }
+}
+
+// Advanced GPX coordinate parser with better error handling
+function parseGpxCoordinatesAdvanced(gpxContent) {
+    const coordinates = [];
+    
+    try {
+        // First try XML parsing
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(gpxContent, "text/xml");
+        
+        // Check for parser errors
+        const parserError = xmlDoc.querySelector("parsererror");
+        if (!parserError) {
+            // Try to get track points first
+            const trackPoints = xmlDoc.querySelectorAll('trkpt');
+            
+            if (trackPoints.length > 0) {
+                trackPoints.forEach(point => {
+                    const lat = parseFloat(point.getAttribute('lat'));
+                    const lon = parseFloat(point.getAttribute('lon'));
+                    
+                    if (!isNaN(lat) && !isNaN(lon) && 
+                        lat >= -90 && lat <= 90 && 
+                        lon >= -180 && lon <= 180) {
+                        coordinates.push({ lat: lat, lon: lon });
+                    }
+                });
+            }
+            
+            // If no track points, try waypoints
+            if (coordinates.length === 0) {
+                const waypoints = xmlDoc.querySelectorAll('wpt');
+                waypoints.forEach(point => {
+                    const lat = parseFloat(point.getAttribute('lat'));
+                    const lon = parseFloat(point.getAttribute('lon'));
+                    
+                    if (!isNaN(lat) && !isNaN(lon) && 
+                        lat >= -90 && lat <= 90 && 
+                        lon >= -180 && lon <= 180) {
+                        coordinates.push({ lat: lat, lon: lon });
+                    }
+                });
+            }
+        }
+        
+        // If XML parsing failed or no coordinates, try regex
+        if (coordinates.length === 0) {
+            const patterns = [
+                /<trkpt[^>]*lat="([^"]*)"[^>]*lon="([^"]*)"/g,
+                /<wpt[^>]*lat="([^"]*)"[^>]*lon="([^"]*)"/g
+            ];
+            
+            for (const pattern of patterns) {
+                let match;
+                while ((match = pattern.exec(gpxContent)) !== null) {
+                    const lat = parseFloat(match[1]);
+                    const lon = parseFloat(match[2]);
+                    
+                    if (!isNaN(lat) && !isNaN(lon) && 
+                        lat >= -90 && lat <= 90 && 
+                        lon >= -180 && lon <= 180) {
+                        coordinates.push({ lat: lat, lon: lon });
+                    }
+                }
+                
+                if (coordinates.length > 0) break;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error parsing GPX:', error);
+    }
+    
+    return coordinates;
+}
+
+// Enhanced route drawing with better visualization
+function drawEnhancedRoute(canvas, coordinates) {
+    if (!canvas || coordinates.length < 2) {
+        return { distance: 0 };
+    }
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size based on container
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = rect.width;
+    const height = 250;
+    
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    
+    ctx.scale(dpr, dpr);
+    
+    // Calculate bounds
+    const bounds = calculateBounds(coordinates);
+    const padding = 30;
+    
+    // Clear canvas with background
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw grid
+    drawGrid(ctx, width, height, padding);
+    
+    // Calculate total distance
+    let totalDistance = 0;
+    
+    // Draw route path
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, '#28a745');
+    gradient.addColorStop(0.5, '#007bff');
+    gradient.addColorStop(1, '#dc3545');
+    
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // Add shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    
+    ctx.beginPath();
+    
+    for (let i = 0; i < coordinates.length; i++) {
+        const coord = coordinates[i];
+        const x = padding + ((coord.lon - bounds.minLon) / bounds.lonRange) * (width - 2 * padding);
+        const y = height - padding - ((coord.lat - bounds.minLat) / bounds.latRange) * (height - 2 * padding);
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+            
+            // Calculate distance
+            const prevCoord = coordinates[i - 1];
+            totalDistance += calculateDistanceHaversine(
+                prevCoord.lat, prevCoord.lon,
+                coord.lat, coord.lon
+            );
+        }
+    }
+    
+    ctx.stroke();
+    
+    // Remove shadow for markers
+    ctx.shadowColor = 'transparent';
+    
+    // Draw start marker
+    const startX = padding + ((coordinates[0].lon - bounds.minLon) / bounds.lonRange) * (width - 2 * padding);
+    const startY = height - padding - ((coordinates[0].lat - bounds.minLat) / bounds.latRange) * (height - 2 * padding);
+    
+    drawMarker(ctx, startX, startY, '#28a745', 'S');
+    
+    // Draw end marker
+    const endCoord = coordinates[coordinates.length - 1];
+    const endX = padding + ((endCoord.lon - bounds.minLon) / bounds.lonRange) * (width - 2 * padding);
+    const endY = height - padding - ((endCoord.lat - bounds.minLat) / bounds.latRange) * (height - 2 * padding);
+    
+    drawMarker(ctx, endX, endY, '#dc3545', 'F');
+    
+    return { distance: totalDistance };
+}
+
+// Helper function to calculate bounds
+function calculateBounds(coordinates) {
+    let minLat = coordinates[0].lat, maxLat = coordinates[0].lat;
+    let minLon = coordinates[0].lon, maxLon = coordinates[0].lon;
+    
+    coordinates.forEach(coord => {
+        minLat = Math.min(minLat, coord.lat);
+        maxLat = Math.max(maxLat, coord.lat);
+        minLon = Math.min(minLon, coord.lon);
+        maxLon = Math.max(maxLon, coord.lon);
+    });
+    
+    // Ensure minimum range
+    const minRange = 0.001;
+    const latRange = Math.max(maxLat - minLat, minRange);
+    const lonRange = Math.max(maxLon - minLon, minRange);
+    
+    return { minLat, maxLat, minLon, maxLon, latRange, lonRange };
+}
+
+// Helper function to draw grid
+function drawGrid(ctx, width, height, padding) {
+    ctx.strokeStyle = '#e9ecef';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    
+    // Vertical lines
+    for (let i = 1; i < 5; i++) {
+        const x = padding + (i * (width - 2 * padding)) / 5;
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, height - padding);
+        ctx.stroke();
+    }
+    
+    // Horizontal lines
+    for (let i = 1; i < 4; i++) {
+        const y = padding + (i * (height - 2 * padding)) / 4;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+    }
+    
+    ctx.setLineDash([]);
+}
+
+// Helper function to draw markers
+function drawMarker(ctx, x, y, color, text) {
+    // Draw circle
+    ctx.fillStyle = color;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Draw text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y);
+}
+
+// Enhanced distance calculation using Haversine formula
+function calculateDistanceHaversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// Enhanced GPX stats parser with better error handling
+function parseGPXStats(gpxData) {
+    try {
+        if (!gpxData || gpxData.trim() === '') {
+            return { distance: '0.0', duration: '0:00', elevation: '0' };
+        }
+        
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(gpxData, "text/xml");
+        
+        // Check for parser errors
+        const parserError = xmlDoc.querySelector("parsererror");
+        if (parserError) {
+            return parseGPXStatsRegex(gpxData);
+        }
+        
+        const trkpts = xmlDoc.querySelectorAll("trkpt");
+        
+        if (trkpts.length === 0) {
+            return parseGPXStatsRegex(gpxData);
+        }
+        
+        let totalDistance = 0;
+        let maxElevation = 0;
+        let minElevation = Infinity;
+        let startTime = null;
+        let endTime = null;
+        
+        for (let i = 0; i < trkpts.length; i++) {
+            const point = trkpts[i];
+            const lat = parseFloat(point.getAttribute('lat'));
+            const lon = parseFloat(point.getAttribute('lon'));
+            
+            // Process elevation
+            const ele = point.querySelector('ele');
+            if (ele) {
+                const elevation = parseFloat(ele.textContent);
+                if (!isNaN(elevation)) {
+                    maxElevation = Math.max(maxElevation, elevation);
+                    minElevation = Math.min(minElevation, elevation);
+                }
+            }
+            
+            // Process time
+            const time = point.querySelector('time');
+            if (time) {
+                const timeValue = new Date(time.textContent);
+                if (!startTime) startTime = timeValue;
+                endTime = timeValue;
+            }
+            
+            // Calculate distance
+            if (i > 0) {
+                const prevPoint = trkpts[i - 1];
+                const prevLat = parseFloat(prevPoint.getAttribute('lat'));
+                const prevLon = parseFloat(prevPoint.getAttribute('lon'));
+                
+                if (!isNaN(lat) && !isNaN(lon) && !isNaN(prevLat) && !isNaN(prevLon)) {
+                    totalDistance += calculateDistanceHaversine(prevLat, prevLon, lat, lon);
+                }
+            }
+        }
+        
+        // Calculate duration
+        let duration = '0:00';
+        let durationMs = 0;
+        if (startTime && endTime) {
+            durationMs = endTime - startTime;
+            const hours = Math.floor(durationMs / (1000 * 60 * 60));
+            const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (hours > 0) {
+                duration = `${hours}:${minutes.toString().padStart(2, '0')}`;
+            } else {
+                duration = `${minutes}:00`;
+            }
+        }
+        
+        // Calculate elevation gain
+        const elevationGain = minElevation !== Infinity ? Math.round(maxElevation - minElevation) : 0;
+        
+        return {
+            distance: totalDistance.toFixed(1),
+            duration: duration,
+            elevation: elevationGain,
+            pace: totalDistance > 0 && durationMs > 0 ? calculatePace(totalDistance, durationMs) : null
+        };
+        
+    } catch (error) {
+        console.error('Error parsing GPX stats:', error);
+        return parseGPXStatsRegex(gpxData);
+    }
+}
+
+// Fallback regex-based GPX stats parser
+function parseGPXStatsRegex(gpxData) {
+    try {
+        const coordinates = parseGpxCoordinatesAdvanced(gpxData);
+        
+        if (coordinates.length < 2) {
+            return { distance: '0.0', duration: '0:00', elevation: '0' };
+        }
+        
+        let totalDistance = 0;
+        for (let i = 1; i < coordinates.length; i++) {
+            const prev = coordinates[i - 1];
+            const curr = coordinates[i];
+            totalDistance += calculateDistanceHaversine(prev.lat, prev.lon, curr.lat, curr.lon);
+        }
+        
+        return {
+            distance: totalDistance.toFixed(1),
+            duration: 'N/A',
+            elevation: '0',
+            pace: null
+        };
+        
+    } catch (error) {
+        console.error('Error in regex GPX parsing:', error);
+        return { distance: '0.0', duration: '0:00', elevation: '0' };
+    }
+}
+
+// Make toggleRoute function globally available
+window.toggleRoute = toggleRoute;
 
 // Handle new post form submission
 async function handleNewPostSubmit(e) {
